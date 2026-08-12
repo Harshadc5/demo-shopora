@@ -180,6 +180,7 @@ function showQuickView(product) {
 function createDealCard(product) {
   const card = document.createElement('article');
   card.className = 'deal-card';
+  card.setAttribute('data-sku', product.id);
   card.innerHTML = `<div class="product-image" style="cursor:pointer"><span class="discount-badge">${discount(product)}% OFF</span></div><div class="deal-info"><span class="deal-chip">${product.badge}</span><h3 style="cursor:pointer">${product.name}</h3><div class="deal-price"><strong>${money(retailPrice(product))}</strong><del>${money(retailOldPrice(product))}</del></div><button class="button button-primary">Add to cart</button></div>`;
   applyVisual(card.querySelector('.product-image'), product);
   card.querySelector('button').addEventListener('click', () => addToCart(product.id));
@@ -405,7 +406,43 @@ function renderCheckout() {
     });
   };
   update();
-  form.addEventListener('submit', (event) => { event.preventDefault(); const items = cartItems(); if (!items.length) { toast('Your cart is empty.'); return; } const orderId = 'SP' + Date.now().toString().slice(-8); Object.keys(cart).forEach((key) => delete cart[key]); saveCart(); update(); form.reset(); const message = document.querySelector('#orderMessage'); message.innerHTML = `<div class="success-card"><span>✓</span><h2>Order confirmed!</h2><p>Your demo order <strong>#${orderId}</strong> has been placed successfully.</p><p>No payment was processed.</p><a class="button button-accent full-width" href="./index.html">Continue shopping</a></div>`; message.hidden = false; });
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const items = cartItems();
+    if (!items.length) { toast('Your cart is empty.'); return; }
+    const orderId = 'SP' + Date.now().toString().slice(-8);
+    
+    // Save order
+    const pastOrders = JSON.parse(localStorage.getItem('shopora-orders') || '[]');
+    let total = 0;
+    const orderItems = items.map(item => {
+      total += retailPrice(item) * item.quantity;
+      return { id: item.id, name: item.name, qty: item.quantity, price: retailPrice(item), category: item.category };
+    });
+    
+    let appliedPromo = JSON.parse(localStorage.getItem('shopora-promo'));
+    if (appliedPromo && appliedPromo.discount > 0) {
+      total = Math.max(0, total - appliedPromo.discount);
+    }
+    
+    pastOrders.unshift({
+      id: orderId,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      total: total,
+      status: 'Processing',
+      items: orderItems
+    });
+    localStorage.setItem('shopora-orders', JSON.stringify(pastOrders));
+
+    Object.keys(cart).forEach((key) => delete cart[key]);
+    saveCart();
+    localStorage.removeItem('shopora-promo');
+    update();
+    form.reset();
+    const message = document.querySelector('#orderMessage');
+    message.innerHTML = `<div class="success-card"><span>✓</span><h2>Order confirmed!</h2><p>Your demo order <strong>#${orderId}</strong> has been placed successfully.</p><p>No payment was processed.</p><a class="button button-accent full-width" href="./orders.html">View order tracking</a><a class="button button-ghost full-width" style="margin-top:0.5rem; color: var(--navy); border: 1px solid var(--line);" href="./index.html">Continue shopping</a></div>`;
+    message.hidden = false;
+  });
 }
 function renderPDP() {
   const params = new URLSearchParams(location.search);
@@ -463,14 +500,22 @@ function renderPDP() {
       <div style="position: sticky; top: 100px; height: max-content; display: flex; gap: 24px; align-items: flex-start;">
         <!-- Thumbnails (Vertical) -->
         <div style="display: flex; flex-direction: column; gap: 16px; width: 85px;">
-          <div class="pdp-thumb" style="width: 100%; aspect-ratio: 1; border: 2px solid var(--blue); border-radius: 12px; background: var(--soft); cursor: pointer; transition: 0.2s;"></div>
-          <div class="pdp-thumb" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s;"></div>
-          <div class="pdp-thumb" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s;"></div>
-          <div class="pdp-thumb" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s;"></div>
+          <div class="pdp-thumb" data-transform="scale(1.35)" style="width: 100%; aspect-ratio: 1; border: 2px solid var(--blue); border-radius: 12px; background: var(--soft); cursor: pointer; transition: 0.2s; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div class="product-image" style="width: 100%; height: 100%; transform: scale(1.35);"></div>
+          </div>
+          <div class="pdp-thumb" data-transform="scale(2) translate(10%, 10%)" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div class="product-image" style="width: 100%; height: 100%; transform: scale(2) translate(10%, 10%);"></div>
+          </div>
+          <div class="pdp-thumb" data-transform="scale(1.5) scaleX(-1)" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div class="product-image" style="width: 100%; height: 100%; transform: scale(1.5) scaleX(-1);"></div>
+          </div>
+          <div class="pdp-thumb" data-transform="scale(2.5) translate(-10%, -10%)" style="width: 100%; aspect-ratio: 1; border: 2px solid transparent; border-radius: 12px; background: var(--soft); cursor: pointer; opacity: 0.5; transition: 0.2s; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            <div class="product-image" style="width: 100%; height: 100%; transform: scale(2.5) translate(-10%, -10%);"></div>
+          </div>
         </div>
         <!-- Main Image -->
         <div class="pdp-main-image" style="flex: 1; aspect-ratio: 1; background-color: var(--soft); border-radius: 24px; position: relative; box-shadow: 0 20px 40px rgba(16,36,62,0.04); overflow: hidden; display: flex; align-items: center; justify-content: center;">
-          <div class="product-image custom-product-image" style="width: 100%; aspect-ratio: 4/5; transform: scale(1.35); transform-origin: center;"></div>
+          <div id="hero-main-image" class="product-image custom-product-image" style="width: 100%; height: 100%; transform: scale(1.35); transform-origin: center;"></div>
         </div>
       </div>
 
@@ -620,7 +665,7 @@ function renderPDP() {
 
   main.innerHTML = html;
 
-  applyVisual(main.querySelector('.product-image'), product);
+  applyVisual(main.querySelector('.custom-product-image'), product);
   main.querySelector('#pdpAddToCart').addEventListener('click', () => addToCart(product.id));
 
   // Wishlist Logic
@@ -703,10 +748,16 @@ function renderPDP() {
     });
   }
 
+  // Apply visual to all thumbnails
+  const thumbImages = main.querySelectorAll('.pdp-thumb .product-image');
+  thumbImages.forEach(img => applyVisual(img, product));
+
   // Interactive Thumbnail Gallery
   const thumbnails = main.querySelectorAll('.pdp-thumb');
-  const mainImage = main.querySelector('.pdp-main-image');
-  if (thumbnails.length > 0 && mainImage) {
+  const mainImageContainer = main.querySelector('.pdp-main-image');
+  const mainProductImage = main.querySelector('.custom-product-image');
+  
+  if (thumbnails.length > 0 && mainImageContainer) {
     thumbnails.forEach(thumb => {
       thumb.addEventListener('mouseenter', () => { if (thumb.style.borderColor !== 'var(--blue)') thumb.style.opacity = '1'; });
       thumb.addEventListener('mouseleave', () => { if (thumb.style.borderColor !== 'var(--blue)') thumb.style.opacity = '0.5'; });
@@ -716,11 +767,19 @@ function renderPDP() {
         thumb.style.opacity = '1';
 
         // Quick visual pop to simulate image changing
-        mainImage.style.opacity = '0.7';
-        mainImage.style.transform = 'scale(0.98)';
+        mainImageContainer.style.opacity = '0.7';
+        mainImageContainer.style.transform = 'scale(0.98)';
+        
+        // Update main image transform
+        const targetImage = document.getElementById('hero-main-image');
+        const transVal = thumb.getAttribute('data-transform');
+        if (targetImage && transVal) {
+           targetImage.style.transform = transVal;
+        }
+
         setTimeout(() => {
-          mainImage.style.opacity = '1';
-          mainImage.style.transform = 'scale(1)';
+          mainImageContainer.style.opacity = '1';
+          mainImageContainer.style.transform = 'scale(1)';
         }, 150);
       });
     });
@@ -758,6 +817,106 @@ newsletter?.addEventListener('submit', (event) => { event.preventDefault(); toas
 
 document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const modal = document.querySelector('#quickViewModal'); if (modal && !modal.hidden) { modal.hidden = true; document.body.classList.remove('modal-open'); } } });
 }
+function initOrders() {
+  const container = document.querySelector('#ordersContainer');
+  if (!container) return;
+
+  let pastOrders = JSON.parse(localStorage.getItem('shopora-orders') || '[]');
+
+  const renderOrders = () => {
+    if (pastOrders.length === 0) {
+      container.innerHTML = `<div class="empty-orders"><span>📦</span><h2>No orders found</h2><p>Looks like you haven't placed any orders yet.</p><a class="button button-accent" href="./category.html">Start shopping</a></div>`;
+      return;
+    }
+
+    container.innerHTML = pastOrders.map(order => `
+      <div class="order-card">
+        <div class="order-header">
+          <div class="order-meta-group">
+            <div>
+              ORDER PLACED
+              <strong>${order.date}</strong>
+            </div>
+            <div>
+              TOTAL
+              <strong>${money(order.total)}</strong>
+            </div>
+            <div>
+              SHIP TO
+              <strong>Guest User</strong>
+            </div>
+          </div>
+          <div>
+            ORDER # ${order.id}
+          </div>
+        </div>
+        <div class="order-body">
+          <div class="order-status ${order.status.toLowerCase()}">
+            <h3>${order.status === 'Delivered' ? '✓ Delivered' : (order.status === 'Processing' ? '⏳ Processing' : '🚚 Shipped')}</h3>
+            ${order.status === 'Delivered' ? `<p style="margin:0; font-size: 0.85rem; color: var(--muted);">Your package was left at the front door.</p>` : `
+              <div class="progress-track">
+                <div class="progress-fill"></div>
+              </div>
+            `}
+          </div>
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item" data-item-id="${item.id}">
+                <div class="product-image" style="cursor:pointer"></div>
+                <div class="order-item-details">
+                  <h4 style="cursor:pointer">${item.name}</h4>
+                  <p>Qty: ${item.qty} · ${money(item.price)}</p>
+                  <div class="order-actions">
+                    <button class="button button-ghost track-btn">Track package</button>
+                    <button class="button button-ghost return-btn">Return item</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Apply visual sprites
+    pastOrders.forEach(order => {
+      order.items.forEach(item => {
+        // Need to query dynamically since same item could be in multiple orders
+        const itemEls = container.querySelectorAll(`[data-item-id="${item.id}"]`);
+        itemEls.forEach(el => {
+           const img = el.querySelector('.product-image');
+           if (!img.hasAttribute('data-sprite-applied')) {
+             img.setAttribute('data-sprite-applied', 'true');
+             applyVisual(img, { id: item.id, category: item.category });
+             const navPDP = (e) => { e.preventDefault(); location.href = `./pdp.html?id=${item.id}`; };
+             img.addEventListener('click', navPDP);
+             el.querySelector('h4').addEventListener('click', navPDP);
+           }
+        });
+      });
+    });
+
+    // Add toast interaction to buttons
+    container.querySelectorAll('.track-btn, .return-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toast('This is a demo UI. Real tracking/returns require a backend!');
+      });
+    });
+  };
+
+  const clearBtn = document.querySelector('#clearOrdersBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      localStorage.removeItem('shopora-orders');
+      pastOrders = [];
+      renderOrders();
+      toast('Order history cleared.');
+    });
+  }
+
+  renderOrders();
+}
+
 function refreshCartViews() { if (currentPage === 'cart.html') renderCart(); if (currentPage === 'checkout.html') { location.reload(); } }
 updateHeaderCounts(); initSearch(); initGlobalInteractions();
 if (currentPage === 'index.html' || currentPage === '') renderHome();
@@ -765,4 +924,5 @@ if (currentPage === 'category.html') renderCatalog();
 if (currentPage === 'cart.html') { renderCart(); renderRecommendations(); }
 if (currentPage === 'checkout.html') renderCheckout();
 if (currentPage === 'pdp.html') renderPDP();
+if (currentPage === 'orders.html') initOrders();
 window.addEventListener('storage', () => { Object.keys(cart).forEach((key) => delete cart[key]); Object.assign(cart, loadCart()); wishlist.clear(); loadJSON(WISHLIST_KEY, []).forEach((id) => wishlist.add(id)); updateHeaderCounts(); if (currentPage === 'cart.html') renderCart(); });
