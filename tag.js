@@ -37,8 +37,8 @@
             samplingRate: parseFloat(_script?.dataset?.samplingRate ?? '1.0'),
             hydrationTimeout: parseInt(_script?.dataset?.hydrationTimeout ?? '3000'),
             domSettleMs: parseInt(_script?.dataset?.domSettleMs ?? '500'),
-            //endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
-            endpoint: 'https://9d94b0b527a5f0.lhr.life/api/collect',
+            endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
+
         };
 
         if (!config.clientId) {
