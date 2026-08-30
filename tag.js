@@ -38,7 +38,7 @@
             hydrationTimeout: parseInt(_script?.dataset?.hydrationTimeout ?? '3000'),
             domSettleMs: parseInt(_script?.dataset?.domSettleMs ?? '500'),
             //endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
-            endpoint: 'https://fair-teams-sort.loca.lt/api/collect',
+            endpoint: 'https://9d94b0b527a5f0.lhr.life/api/collect',
         };
 
         if (!config.clientId) {
