@@ -149,13 +149,13 @@
           }
         }*/
 
-
+        // ------Micropolling logic to avoid the artificial 3s hard capped delay-------------------
         // ================================================================
         // SECTION 5 — HYDRATION DETECTION (DIRECTIVE 4: MICRO-POLLING)
         // ================================================================
 
         // We store the performance metric globally so Tier 4 can inject it into the payload
-        window.__AIORA_HYDRATION_MS__ = 0;
+        /*window.__AIORA_HYDRATION_MS__ = 0;
 
         function waitForHydration(onComplete) {
             var startTime = performance.now();
@@ -179,8 +179,90 @@
                     onComplete();
                 }
             }, 50); // Polling every 50ms instead of waiting blindly!
-        }
+        }*/
 
+
+        // ================================================================
+        // SECTION 5 — HYDRATION DETECTION (ELEMENT-LEVEL OBSERVER)
+        // ================================================================
+
+        window.__AIORA_HYDRATION_MS__ = 0;
+
+        function waitForHydration(onComplete) {
+            var startTime = performance.now();
+            var path = window.location.pathname;
+
+            // Re-use our classification logic to know what page we are on
+            var pageType = 'other';
+            if (path.includes('/cart')) pageType = 'cart';
+            else if (path.includes('/product') || path.includes('/p/')) pageType = 'pdp';
+            else if (path.includes('/search') || path.includes('/category')) pageType = 'search';
+
+            // The Checklist Flags
+            var hasFoundItems = false;
+            var hasFoundTotal = false;
+            var hasFoundEmptyState = false;
+
+            // 1. The Safety Net (Hard Cap Timeout)
+            var hardCapTimer = setTimeout(function () {
+                if (observer) observer.disconnect();
+                window.__AIORA_HYDRATION_MS__ = Math.round(performance.now() - startTime);
+                onComplete(); // Fire anyway after 3 seconds if the site is broken
+            }, config.hydrationTimeout);
+
+            // 2. The Smart Element-Level Observer
+            var observer = new MutationObserver(function () {
+                var isReadyToFire = false;
+
+                // Cart Page Checklist
+                if (pageType === 'cart') {
+                    if (firstMatch(document, CARD_SELECTORS)) hasFoundItems = true;
+                    if (firstMatch(document, FIELD_SEL.cartSubtotal) || firstMatch(document, FIELD_SEL.cartTotal)) hasFoundTotal = true;
+                    if (document.querySelector('.empty-cart-message, .empty-cart, [data-testid="empty-cart"]')) hasFoundEmptyState = true;
+
+                    isReadyToFire = (hasFoundItems && hasFoundTotal) || hasFoundEmptyState;
+                }
+                // PDP Page Checklist
+                else if (pageType === 'pdp') {
+                    if (firstMatch(document, FIELD_SEL.name)) hasFoundItems = true;
+                    if (firstMatch(document, FIELD_SEL.price)) hasFoundTotal = true;
+
+                    isReadyToFire = hasFoundItems && hasFoundTotal;
+                }
+                // Search/Category Page Checklist
+                else if (pageType === 'search') {
+                    if (firstMatch(document, CARD_SELECTORS)) hasFoundItems = true;
+                    if (document.querySelector('.no-results, .zero-results, .empty-search')) hasFoundEmptyState = true;
+
+                    isReadyToFire = hasFoundItems || hasFoundEmptyState;
+                }
+                // Generic Pages (Fire instantly)
+                else {
+                    isReadyToFire = true;
+                }
+
+                // 3. Did we complete the checklist? Stop the observer and send payload!
+                if (isReadyToFire) {
+                    observer.disconnect();
+                    clearTimeout(hardCapTimer);
+                    window.__AIORA_HYDRATION_MS__ = Math.round(performance.now() - startTime);
+                    onComplete();
+                }
+            });
+
+            // Start watching the DOM instantly!
+            if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+                // Trigger a fake mutation instantly, just in case the page loaded extremely fast!
+                var textNode = document.createTextNode('');
+                document.body.appendChild(textNode);
+                document.body.removeChild(textNode);
+            } else {
+                // Failsafe if document.body is somehow missing
+                setTimeout(onComplete, 100);
+            }
+        }
 
 
 
@@ -514,12 +596,12 @@
             cartSavings: ['#summarySavings'],
             cartDelivery: ['#summaryDelivery'],
             cartTax: ['.summary-tax', '#summaryTax', '[data-automation-id="summaryTax"]'],
-            cartPromotions: ['.cart-discount', '.promo-applied', '[data-automation-id="appliedPromotion"]'],
+            cartPromotions: ['.cart-discount', '.promo-applied', '[data-automation-id="appliedPromotion"]', '#promoRow'],
             cartShippingThreshold: ['.shipping-threshold', '#shippingProgress', '.shipping-progress'],
             cartLoyalty: ['.loyalty-discount', '[data-automation-id="loyaltyDiscount"]'],
             // --- NEW TIER 2 ADDITIONS --- w.r.t Canonical Signal Schema
             appliedDiscountConstructs: ['.applied-discount-type', '[data-discount-type]', '.discount-construct'],
-            promoInput: ['input[name*="discount"]', 'input[name*="coupon"]', '#promoCode', '.promo-input'],
+            promoInput: ['input[name*="discount"]', 'input[name*="coupon"]', '#promoCode', '.promo-input', '#promoInput'],
             altPaymentButtons: ['[data-testid*="apple"]', '.apple-pay', '#applePay', '.paypal-button', '[data-payment-method="google-pay"]', '.alt-payment'],
             promoInlineReason: ['.promo-error', '.discount-error', '.inline-error', '[data-automation-id="promoError"]'],
             loyaltyBalance: ['.loyalty-balance', '.points-balance', '[data-automation-id="loyaltyPointsBalance"]'],
@@ -1192,7 +1274,7 @@
                 promoEls.forEach(function (el) {
                     var promo = {};
                     var nameEl = el.querySelector('.promo-name, strong, p');
-                    var amtEl = el.querySelector('.promo-amount, .discount-amount, span');
+                    var amtEl = el.querySelector('.promo-amount, .discount-amount') || el.querySelector('span:not(.promo-name)');
 
                     if (nameEl) promo.name = nameEl.textContent.trim();
                     if (amtEl) {
@@ -1885,8 +1967,8 @@
 
             var payload = {
                 envelope_type: "interaction_events",
-                schema_version: config.version,
-                tag_version: config.version,
+                schema_version: "0.2.0",
+                tag_version: "0.2.0",
                 client_id: config.clientId,
                 session_token: sessionToken,
                 flush_id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2),
@@ -1909,23 +1991,26 @@
             } catch (e) { }
         }
 
-        function pushEvent(eventType, fields) {
+        function pushEvent(eventType, fields, flushImmediately) {
             var eventObj = {
                 event_id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2),
                 event_type: eventType,
                 timestamp: new Date().toISOString(),
                 page_type: document.body.dataset.pageType || 'unknown',
-                page_url_path: window.location.pathname
+                // old (index.html) : page_url_path: window.location.pathname
+                page_url_path: window.location.pathname.replace(/\/index\.html$/i, '') || '/'
+
             };
 
             for (var k in fields) { if (fields.hasOwnProperty(k)) eventObj[k] = fields[k]; }
 
             interactionBuffer.push(eventObj);
 
-            if (interactionBuffer.length >= MAX_BUFFER_SIZE || JSON.stringify(interactionBuffer).length >= MAX_BUFFER_BYTES) {
-                flushInteractionEvents("size");
+            var currentSizeBytes = JSON.stringify(interactionBuffer).length;
+            if (flushImmediately || interactionBuffer.length >= 15 || currentSizeBytes >= 8192) {
+                flushInteractionEvents(flushImmediately ? "immediate_navigation" : "size");
             } else if (!interactionTimer) {
-                interactionTimer = setTimeout(function () { flushInteractionEvents("time"); }, FLUSH_INTERVAL_MS);
+                interactionTimer = setTimeout(function () { flushInteractionEvents("time"); }, 15000);
             }
         }
 
@@ -1959,8 +2044,24 @@
                     if (target.closest('header')) searchData.submission_surface = 'header-search';
                     else if (target.closest('.mobile-menu, [role="navigation"]')) searchData.submission_surface = 'mobile-search';
 
-                    pushEvent("search_submitted", searchData);
+                    pushEvent("search_submitted", searchData, true);
                 }
+                // MATCH: purchase_completed (SPA form submit on checkout page)
+                var isCheckoutForm = target.matches('form#checkoutForm, form.checkout-form') || target.querySelector('[data-action="place-order"], .place-order, #placeOrderButton');
+                if (isCheckoutForm) {
+                    var orderData = { order_confirmed: true, order_total_displayed: null, order_currency: null, line_item_count: 0 };
+                    var totalEl = firstMatch(document, FIELD_SEL.checkoutTotal) || document.querySelector('.order-total');
+                    if (totalEl) {
+                        orderData.order_total_displayed = totalEl.textContent.trim();
+                        orderData.order_currency = extractCurrency(orderData.order_total_displayed);
+                    }
+                    var items = document.querySelectorAll('#checkoutItems .mini-item, #checkoutItems li, .order-item');
+                    orderData.line_item_count = items.length;
+
+                    pushEvent("purchase_completed", orderData, true); // Flush immediately!
+                }
+
+
             } catch (err) { }
         }
 
@@ -1976,7 +2077,7 @@
                 // MATCH: sort_changed
                 if (target.tagName === 'SELECT' && (target.name.toLowerCase().includes('sort') || target.id.toLowerCase().includes('sort') || target.className.toLowerCase().includes('sort'))) {
                     var sortData = {
-                        sort_value: target.options[target.selectedIndex].text || target.value,
+                        sort_value: target.value || target.options[target.selectedIndex].text,
                         page_type: document.body.dataset.pageType || 'unknown'
                     };
                     pushEvent("sort_changed", sortData);
@@ -1984,12 +2085,12 @@
                 }
 
                 // MATCH: filter_applied / filter_removed (for checkboxes/radios)
-                var isFilterInput = target.tagName === 'INPUT' && (target.closest('.filters, .facets, aside, [role="complementary"]') || target.name.toLowerCase().includes('filter'));
+                var isFilterInput = target.tagName === 'INPUT' && (target.type === 'checkbox' || target.type === 'radio') && (target.closest('.filters, .facets, aside, [role="complementary"]') || target.name.toLowerCase().includes('filter'));
 
                 if (isFilterInput) {
                     var isApplied = target.checked;
                     var filterData = {
-                        filter_type: target.name || target.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
+                        filter_type: target.name || target.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4')?.textContent.trim() || target.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
                         filter_value: target.value || target.nextElementSibling?.textContent?.trim() || 'unknown',
                         active_filter_count_after: document.querySelectorAll('.filters input:checked, .facets input:checked').length
                     };
@@ -2004,11 +2105,53 @@
                 if (!target) return;
 
                 // ================================================================
+                // NEW : Priority 3 - promo_code_applied / promo_removed
+                // ================================================================
+                // 1. Check for Promo Remove Click
+                var isPromoRemove = target.closest('#removePromoBtn, button[id*="removePromo"]');
+                if (isPromoRemove) {
+                    var removedCode = document.querySelector('#promoCodeName') ? document.querySelector('#promoCodeName').textContent.trim() : 'unknown';
+                    pushEvent("promo_removed", { code: removedCode });
+                    return; // Stop here so remove_from_cart doesn't fire!
+                }
+                // 2. Check for Promo Apply Click
+                var isPromoClick = target.closest('#applyPromoBtn, button[id*="promo"], button[id*="apply"]');
+                if (isPromoClick) {
+                    var promoInputEl = document.querySelector('#promoInput, input[name*="promo"], input[name*="discount"]');
+                    if (promoInputEl) {
+                        var codeStr = promoInputEl.value.trim();
+                        // Wait 500ms to allow your app.js logic to run and update the UI
+                        setTimeout(function () {
+                            var promoData = {
+                                code: codeStr,
+                                result: 'unknown',
+                                discount_amount_shown: null
+                            };
+                            // Check if an error message appeared
+                            var errorEl = document.querySelector('.promo-error, .discount-error, #promoError, .toast.error');
+                            if (errorEl && errorEl.offsetParent !== null) {
+                                promoData.result = 'rejected';
+                                pushEvent("promo_code_rejected", promoData);
+                            } else {
+                                // Check if the success row is visible
+                                var successEl = document.querySelector('#promoRow, .promo-applied');
+                                if (successEl && successEl.offsetParent !== null) {
+                                    promoData.result = 'accepted';
+                                    var amtEl = successEl.querySelector('#summaryPromo, .promo-amount');
+                                    if (amtEl) promoData.discount_amount_shown = amtEl.textContent.trim();
+                                }
+                                pushEvent("promo_code_applied", promoData);
+                            }
+                        }, 500);
+                    }
+                    return; // Stop here so no other generic rules catch this click
+                }
+
+                // ================================================================
                 // NEW : Priority 1: MATCH: checkout_initiated
                 // ================================================================
-                var isCheckoutBtn = target.closest('[data-action="checkout"], .checkout-button, #placeOrderButton, [data-automation-id="checkoutButton"]') ||
-                    (target.tagName === 'BUTTON' && /(proceed to checkout|checkout|continue to checkout)/i.test(target.textContent));
-
+                var isCheckoutBtn = target.closest('[data-action="checkout"], .checkout-button, #placeOrderButton, #checkoutButton, [href*="checkout"], [data-automation-id="checkoutButton"]') ||
+                    ((target.tagName === 'BUTTON' || target.tagName === 'A') && /(proceed to checkout|checkout|continue to checkout)/i.test(target.textContent));
                 if (isCheckoutBtn && (window.location.href.toLowerCase().includes('/cart') || window.location.href.toLowerCase().includes('cart.html') || !!document.querySelector('.cart-layout') || document.body.dataset.pageType === 'cart')) {
                     var cartTotals = { cart_line_count: 0, cart_displayed_total: null, cart_displayed_currency: null };
                     var items = document.querySelectorAll('#cartItems article.cart-item, #cartItems .cart-item, [data-automation-id="cart-item"]');
@@ -2019,7 +2162,18 @@
                         cartTotals.cart_displayed_total = totalEl.textContent.trim();
                         cartTotals.cart_displayed_currency = extractCurrency(cartTotals.cart_displayed_total);
                     }
-                    pushEvent("checkout_initiated", cartTotals);
+                    // just for local testing
+                    // STOP THE BROWSER FROM NAVIGATING INSTANTLY
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+
+                    pushEvent("checkout_initiated", cartTotals, true);
+
+                    // just for local testing
+                    // WAIT 100ms TO SEND PAYLOAD, THEN NAVIGATE MANUALLY
+                    var href = isCheckoutBtn.href || './checkout.html';
+                    setTimeout(function () { window.location.href = href; }, 100);
+
                     return;
                 }
 
@@ -2031,7 +2185,7 @@
 
                 if (isAddBtn) {
                     var productCard = target.closest('.product-card, .product-tile, [data-product-id], article, [data-automation-id="product-pod"]');
-                    var eventData = { sku: null, surface: "catalog-grid", position: 1, displayed_price: null, displayed_currency: null };
+                    var eventData = { sku: null, surface: "catalog-grid", position: 1, price: null, currency: null };
 
                     if (productCard) {
                         var siblings = productCard.parentElement ? productCard.parentElement.children : [];
@@ -2049,8 +2203,12 @@
                         }
                         var priceEl = firstMatch(productCard, FIELD_SEL.price);
                         if (priceEl) {
-                            eventData.displayed_price = priceEl.textContent.trim();
-                            eventData.displayed_currency = extractCurrency(eventData.displayed_price);
+                            // Only replace the code inside this block!
+                            var parsed = parsePrice(priceEl.textContent.trim());
+                            if (parsed) {
+                                eventData.price = parsed.amount;
+                                eventData.currency = parsed.currency;
+                            }
                         }
                     }
                     pushEvent("add_to_cart", eventData);
@@ -2087,44 +2245,174 @@
                 // ================================================================
                 // NEW : Priority 2 - filter_applied / filter_removed (Click based filters)
                 // ================================================================
-                var isFilterLink = target.closest('a.filter-link, button.filter-btn, [data-action="filter"]');
+                var isFilterLink = target.closest('a.filter-link, button.filter-btn, [data-action="filter"], .category-filter-list button, .filters button');
                 if (isFilterLink) {
                     var isRemoving = target.closest('.active-filter, .remove-filter') !== null;
                     var filterClickData = {
-                        filter_type: isFilterLink.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
-                        filter_value: isFilterLink.textContent.trim(),
+                        filter_type: isFilterLink.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4')?.textContent.trim() || isFilterLink.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
+                        filter_value: isFilterLink.getAttribute('data-category') || isFilterLink.textContent.trim(),
                         active_filter_count_after: document.querySelectorAll('.active-filter, .filters input:checked').length + (isRemoving ? -1 : 1)
                     };
                     pushEvent(isRemoving ? "filter_removed" : "filter_applied", filterClickData);
                     return;
                 }
 
+
                 // ================================================================
                 // NEW : Priority 2 - product_card_clicked
                 // (Runs AFTER add_to_cart so we don't confuse a cart click with a browse click)
                 // ================================================================
-                var isCardClick = target.closest('a') && target.closest('.product-card, .product-tile, [data-product-id], article, [data-automation-id="product-pod"]');
+                var clickedCard = target.closest('.product-card, .product-tile, [data-product-id], article, [data-automation-id="product-pod"]');
+                var isCardClick = clickedCard && (target.closest('a') || target.closest('.product-image') || target.tagName === 'H3' || target.tagName === 'IMG' || target.tagName === 'P');
                 if (isCardClick && !target.closest('[data-action="add-to-cart"], .add-to-cart, button')) {
-                    var clickedCard = target.closest('.product-card, .product-tile, [data-product-id], article, [data-automation-id="product-pod"]');
-                    var cardData = { sku: null, surface: "catalog-grid", position: 1, displayed_price: null, displayed_currency: null };
-
+                    var cardData = { sku: null, surface: "catalog-grid", position: 1, price: null, currency: null };
                     var cardSiblings = clickedCard.parentElement ? clickedCard.parentElement.children : [];
                     for (var j = 0; j < cardSiblings.length; j++) {
                         if (cardSiblings[j] === clickedCard) { cardData.position = j + 1; break; }
                     }
 
-                    var cardSkuEl = firstMatch(clickedCard, FIELD_SEL.sku);
-                    if (cardSkuEl) cardData.sku = cardSkuEl.getAttribute('data-product-id') || cardSkuEl.getAttribute('data-sku');
-
+                    // Check the clickedCard directly first, then look inside it
+                    var cardSku = clickedCard.getAttribute('data-product-id') || clickedCard.getAttribute('data-sku');
+                    if (!cardSku) {
+                        var cardSkuEl = firstMatch(clickedCard, FIELD_SEL.sku);
+                        if (cardSkuEl) cardSku = cardSkuEl.getAttribute('data-product-id') || cardSkuEl.getAttribute('data-sku');
+                    }
+                    cardData.sku = cardSku || null;
                     var cardPriceEl = firstMatch(clickedCard, FIELD_SEL.price);
                     if (cardPriceEl) {
-                        cardData.displayed_price = cardPriceEl.textContent.trim();
-                        cardData.displayed_currency = extractCurrency(cardData.displayed_price);
+                        var parsed = parsePrice(cardPriceEl.textContent.trim());
+                        if (parsed) {
+                            cardData.price = parsed.amount;
+                            cardData.currency = parsed.currency;
+                        }
                     }
 
-                    pushEvent("product_card_clicked", cardData);
+                    // just for local testing
+                    // STOP THE BROWSER FROM NAVIGATING INSTANTLY
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    pushEvent("product_card_clicked", cardData, true);
+
+                    // just for local testing
+                    // WAIT 100ms TO SEND PAYLOAD, THEN NAVIGATE MANUALLY
+                    setTimeout(function () {
+                        window.location.href = './pdp.html?id=' + cardData.sku;
+                    }, 100);
+
                     return;
                 }
+
+                // ================================================================
+                // NEW : Priority 3 - quick_view_opened
+                // ================================================================
+                // (Ignore buttons that have the word 'close' in their aria-label or class)
+                var isQuickViewBtn = target.closest('.quick-view, [data-action="quick-view"], button[aria-label*="quick view" i]:not(.modal-close):not([aria-label*="close" i])');
+                if (isQuickViewBtn) {
+                    var qvCard = target.closest('.product-card, .product-tile, article, [data-automation-id="product-pod"]');
+                    var qvData = { sku: null, surface: "catalog-grid", position: 1 };
+
+                    if (qvCard) {
+                        var qvCardSku = qvCard.getAttribute('data-product-id') || qvCard.getAttribute('data-sku');
+                        if (!qvCardSku) {
+                            var qvSkuEl = firstMatch(qvCard, FIELD_SEL.sku);
+                            if (qvSkuEl) qvCardSku = qvSkuEl.getAttribute('data-product-id') || qvSkuEl.getAttribute('data-sku');
+                        }
+                        qvData.sku = qvCardSku || null;
+
+                        var qvSiblings = qvCard.parentElement ? qvCard.parentElement.children : [];
+                        for (var k = 0; k < qvSiblings.length; k++) {
+                            if (qvSiblings[k] === qvCard) { qvData.position = k + 1; break; }
+                        }
+                    }
+                    pushEvent("quick_view_opened", qvData);
+                    return;
+                }
+
+                // ================================================================
+                // NEW : Priority 3 - wishlist_added
+                // ================================================================
+                var isWishlistBtn = target.closest('.wishlist-button, [data-action="wishlist"], [data-save], button[aria-label*="wishlist" i]');
+                if (isWishlistBtn) {
+                    var wlCard = target.closest('.product-card, .product-tile, article, .cart-item');
+                    var wlData = { sku: null, surface: wlCard && wlCard.classList.contains('cart-item') ? "cart" : "catalog-grid", position: 1, displayed_price: null };
+
+                    if (wlCard) {
+                        var wlCardSku = wlCard.getAttribute('data-product-id') || wlCard.getAttribute('data-sku') || wlCard.getAttribute('data-cart-id');
+                        if (!wlCardSku) {
+                            var wlSkuEl = firstMatch(wlCard, FIELD_SEL.sku);
+                            if (wlSkuEl) wlCardSku = wlSkuEl.getAttribute('data-product-id') || wlSkuEl.getAttribute('data-sku');
+                        }
+                        wlData.sku = wlCardSku || null;
+
+                        var wlPriceEl = firstMatch(wlCard, FIELD_SEL.price) || wlCard.querySelector('.cart-item-price strong');
+                        if (wlPriceEl) {
+                            wlData.displayed_price = wlPriceEl.textContent.trim();
+                        }
+
+                        var wlSiblings = wlCard.parentElement ? wlCard.parentElement.children : [];
+                        for (var m = 0; m < wlSiblings.length; m++) {
+                            if (wlSiblings[m] === wlCard) { wlData.position = m + 1; break; }
+                        }
+                    }
+
+                    // If the button is already 'active', the user is clicking to remove it!
+                    // (Note: 'data-save' is the Cart "Save for later" button, which always adds)
+                    var isRemoving = isWishlistBtn.classList.contains('active') && !isWishlistBtn.hasAttribute('data-save');
+
+                    pushEvent(isRemoving ? "wishlist_removed" : "wishlist_added", wlData);
+
+
+                    return;
+                }
+
+                // ================================================================
+                // NEW : Priority 3 - quantity_changed
+                // ================================================================
+                var isQtyBtn = target.closest('[data-dec], [data-inc], .qty-minus, .qty-plus');
+                if (isQtyBtn) {
+                    var qtyItem = target.closest('.cart-item, article');
+                    if (qtyItem) {
+                        var qtyData = { sku: null, quantity_before: null, quantity_after: null, line_total_before: null, line_total_after: null };
+
+                        var qtySku = qtyItem.getAttribute('data-cart-id') || qtyItem.getAttribute('data-product-id');
+                        qtyData.sku = qtySku || null;
+
+                        var qtySpan = qtyItem.querySelector('.quantity-control span, input.qty');
+                        if (qtySpan) {
+                            var currentQty = parseInt(qtySpan.textContent || qtySpan.value, 10);
+                            qtyData.quantity_before = currentQty;
+                            qtyData.quantity_after = isQtyBtn.hasAttribute('data-inc') || isQtyBtn.classList.contains('qty-plus') ? currentQty + 1 : Math.max(0, currentQty - 1);
+                        }
+
+                        var lineTotalElQty = firstMatch(qtyItem, FIELD_SEL.cartItemLineTotal);
+                        if (lineTotalElQty) {
+                            qtyData.line_total_before = lineTotalElQty.textContent.trim();
+                        }
+
+                        // Wait 500ms for Shopora to recalculate and redraw the cart
+                        setTimeout(function () {
+                            // The cart completely redraws, so we must find the item again using its SKU
+                            var freshItem = document.querySelector('[data-cart-id="' + qtySku + '"], [data-product-id="' + qtySku + '"]');
+                            if (freshItem) {
+                                var newTotalEl = firstMatch(freshItem, FIELD_SEL.cartItemLineTotal);
+                                if (newTotalEl) {
+                                    qtyData.line_total_after = newTotalEl.textContent.trim();
+                                }
+                            }
+                            // If the user drops the quantity to 0, they effectively removed it!
+                            if (qtyData.quantity_after === 0) {
+                                pushEvent("remove_from_cart", qtyData, true); // Log it as a REMOVE event
+                            } else {
+                                pushEvent("quantity_changed", qtyData); // Log it as a QUANTITY event
+                            }
+
+                        }, 500);
+
+                    }
+                    return;
+                }
+
+
 
             } catch (err) { }
         }

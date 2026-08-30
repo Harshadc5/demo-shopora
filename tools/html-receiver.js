@@ -70,6 +70,11 @@ const server = http.createServer((req, res) => {
         console.log(`======================================================`);
         console.dir(payload, { depth: null, colors: true });
 
+        // Save to file for easy copy-pasting -----------------------
+        const logPath = path.join(__dirname, '..', 'payloads.log');
+        fs.appendFileSync(logPath, `\n\n--- [${new Date().toISOString()}] PAYLOAD: ${payload.envelope_type || 'tier0-9'} ---\n` + JSON.stringify(payload, null, 2), 'utf8');
+        //--------------------------------------------------------- 
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'success' }));
       } catch (e) {
@@ -88,7 +93,7 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log('╔════════════════════════════════════════════════════╗');
   console.log('║  AIORA HTML Receiver for Test Suite Extension      ║');
-  console.log(`║  Listening on http://localhost:${PORT}/save-html        ║`);
+  console.log(`║  Listening on http://localhost:${PORT}/save-html      ║`);
   console.log(`║  Saving files to: tests/fixtures/retail-pages/     ║`);
   console.log('╚════════════════════════════════════════════════════╝');
 });
