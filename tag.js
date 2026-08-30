@@ -37,7 +37,8 @@
             samplingRate: parseFloat(_script?.dataset?.samplingRate ?? '1.0'),
             hydrationTimeout: parseInt(_script?.dataset?.hydrationTimeout ?? '3000'),
             domSettleMs: parseInt(_script?.dataset?.domSettleMs ?? '500'),
-            endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
+            //endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
+            endpoint: 'https://tidy-pants-hang.loca.lt/api/collect',
         };
 
         if (!config.clientId) {
