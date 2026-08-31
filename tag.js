@@ -532,7 +532,7 @@
                     timestamp: new Date().toISOString(),
                     sampled: sampledIn,
                     page_type: pageType,
-                    page_url_path: path,
+                    page_url_path: path.replace(/\/index\.html$/i, '') || '/',
 
                     // New Fields
                     sequence_no: sequenceNo,
@@ -884,8 +884,13 @@
                         var h1 = textOf(doc.querySelector('h1, .product-title, [data-automation-id="productName"]'), 80);
                         if (h1) {
                             var heroTile = { position: positionCounter, surface: 'hero', name: h1 };
-                            var skuEl = firstMatch(doc, FIELD_SEL.sku);
-                            if (skuEl) heroTile.sku = skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
+                            // 2-STEP SKU EXTRACTION FOR HERO BANNER
+                            var heroSku = doc.getAttribute('data-product-id') || doc.getAttribute('data-sku');
+                            if (!heroSku) {
+                                var skuEl = firstMatch(doc, FIELD_SEL.sku);
+                                if (skuEl) heroSku = skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
+                            }
+                            heroTile.sku = heroSku || null;
 
                             var parsedPrice = parsePrice(textOf(firstMatch(doc, FIELD_SEL.price), 20));
                             if (parsedPrice) {
@@ -953,43 +958,47 @@
 
         //------------New-----------(Add)---code for first match
         function buildCartLineItem(item) {
-            // Look how clean this is! No more hardcoded strings.
-            // We just use firstMatch() to check the FIELD_SEL list.
             var name = textOf(firstMatch(item, FIELD_SEL.cartItemName), 80);
             if (!name) return null;
             var li = { name: name };
-
             var brand = textOf(firstMatch(item, FIELD_SEL.cartItemBrand), 40);
+            if (brand) li.brand = brand;
 
-            // We can reuse the price/badge logic from Tier 1!
-            var price = textOf(firstMatch(item, FIELD_SEL.price), 20);
-            var oldPrice = textOf(firstMatch(item, FIELD_SEL.oldPrice), 20);
+            // FIX: Using parsePrice for Price & Currency
+            var rawPrice = textOf(firstMatch(item, FIELD_SEL.price), 20);
+            var parsed = parsePrice(rawPrice);
+            if (parsed) {
+                li.price = parsed.amount;
+                if (parsed.currency) li.currency = parsed.currency;
+            }
+
+            // FIX: Using parsePrice for Old Price
+            var rawOld = textOf(firstMatch(item, FIELD_SEL.oldPrice), 20);
+            var parsedOld = parsePrice(rawOld);
+            if (parsedOld) li.old_price = parsedOld.amount;
+
             var discount = textOf(firstMatch(item, FIELD_SEL.cartItemDiscount), 20);
+            if (discount) li.discount = discount;
 
             var skuEl = item.querySelector('[data-item-id]') || firstMatch(item, FIELD_SEL.sku);
             if (skuEl) {
                 li.sku = skuEl.getAttribute('data-item-id') || skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
-
-                // --- NEW: SKU-in-href Fallback ---
                 if (!li.sku && (skuEl.tagName === 'A' || skuEl.hasAttribute('href'))) {
                     var href = skuEl.getAttribute('href') || '';
                     var match = href.match(/\/p\/(?:[^\/]+\/)*(\d+)/);
                     if (match) li.sku = match[1];
                 }
             }
+
             var qtyEl = firstMatch(item, FIELD_SEL.cartItemQuantity);
             var qtyText = qtyEl ? (qtyEl.getAttribute('aria-valuenow') || qtyEl.getAttribute('value') || qtyEl.value || qtyEl.textContent).trim() : null;
             if (qtyText) li.quantity = parseInt(qtyText, 10);
 
-            var lineTotal = textOf(firstMatch(item, FIELD_SEL.cartItemLineTotal), 20);
-            if (lineTotal) li.line_total = lineTotal;
+            // FIX: Using parsePrice for Line Total
+            var rawTotal = textOf(firstMatch(item, FIELD_SEL.cartItemLineTotal), 20);
+            var parsedTotal = parsePrice(rawTotal);
+            if (parsedTotal) li.line_total = parsedTotal.amount;
 
-            // ----------------------------------------------
-            if (brand) li.brand = brand;
-            if (price) li.price = price;
-            if (oldPrice) li.old_price = oldPrice;
-            if (discount) li.discount = discount;
-            /*if (skuEl) li.sku = skuEl.getAttribute('data-item-id');*/
             return li;
         }
 
@@ -1023,15 +1032,24 @@
             if (!name) return null;
             var li = { name: name };
 
-            var price = textOf(firstMatch(item, FIELD_SEL.checkoutItemPrice), 20);
-            if (price) li.price = price;
+            // FIX: Using parsePrice for Checkout Price
+            var rawPrice = textOf(firstMatch(item, FIELD_SEL.checkoutItemPrice), 20);
+            var parsed = parsePrice(rawPrice);
+            if (parsed) {
+                li.price = parsed.amount;
+                if (parsed.currency) li.currency = parsed.currency;
+            }
 
-            // --- NEW: Grab Quantity ---
+            // FIX: Force Quantity to be an Integer instead of a String
             var qty = textOf(firstMatch(item, FIELD_SEL.checkoutItemQuantity), 20);
-            if (qty) li.quantity = qty;
+            if (qty) {
+                var qNum = parseInt(qty, 10);
+                if (!isNaN(qNum)) li.quantity = qNum;
+            }
 
             return li;
         }
+
 
         function collectCheckoutLineItems(doc) {
             var lineItems = [];
@@ -1187,27 +1205,31 @@
             var savings = textOf(firstMatch(doc, FIELD_SEL.cartSavings), 20);
             var delivery = textOf(firstMatch(doc, FIELD_SEL.cartDelivery), 20);
 
-            if (subtotal) result.subtotal = subtotal;
-            if (total) result.total = total;
-            if (savings) result.savings_shown = savings;
-            if (delivery) result.delivery_cost = delivery;
-
-            // Extracting Numerics for Tier 4 Math
             if (subtotal) {
-                var num = parseFloat(subtotal.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(num)) result.subtotal_numeric = num;
+                result.subtotal = subtotal;
+                var parsedSub = parsePrice(subtotal);
+                if (parsedSub) {
+                    result.subtotal_numeric = parsedSub.amount;
+                    if (parsedSub.currency) result.currency = parsedSub.currency;
+                }
             }
             if (total) {
-                var numTotal = parseFloat(total.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numTotal)) result.total_numeric = numTotal;
+                result.total = total;
+                var parsedTot = parsePrice(total);
+                if (parsedTot) {
+                    result.total_numeric = parsedTot.amount;
+                    if (parsedTot.currency && !result.currency) result.currency = parsedTot.currency;
+                }
             }
             if (savings) {
-                var numSavings = parseFloat(savings.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numSavings)) result.savings_numeric = numSavings;
+                result.savings_shown = savings;
+                var parsedSav = parsePrice(savings);
+                if (parsedSav) result.savings_numeric = parsedSav.amount;
             }
             if (delivery) {
-                var numDelivery = parseFloat(delivery.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numDelivery)) result.delivery_numeric = numDelivery;
+                result.delivery_cost = delivery;
+                var parsedDel = parsePrice(delivery);
+                if (parsedDel) result.delivery_numeric = parsedDel.amount;
             }
 
             var itemLabelEl = doc.querySelector('#cartItemLabel');
@@ -1225,13 +1247,13 @@
             // 1. Promo field state (active, disabled, hidden, or not-present)
             var promoInput = firstMatch(doc, FIELD_SEL.promoInput);
             if (promoInput) {
-                if (promoInput.disabled) result.promo_field_state = 'disabled';
-                else if (promoInput.offsetParent === null) result.promo_field_state = 'hidden';
-                else result.promo_field_state = 'active';
+                // Just assume 'active' if it exists. Shopora never hides/disables it.
+                result.promo_field_state = 'active';
             } else {
                 result.promo_field_state = 'not-present';
             }
             result.promo_field_present = (result.promo_field_state !== 'not-present');
+
 
             // 2. Checkout controls (Alternative payment buttons)
             var altPayments = doc.querySelectorAll(FIELD_SEL.altPaymentButtons.join(', '));
@@ -1352,26 +1374,33 @@
 
             if (subtotal) {
                 result.subtotal = subtotal;
-                var numSub = parseFloat(subtotal.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numSub)) result.subtotal_numeric = numSub;
+                var parsedSub = parsePrice(subtotal);
+                if (parsedSub) {
+                    result.subtotal_numeric = parsedSub.amount;
+                    if (parsedSub.currency) result.currency = parsedSub.currency;
+                }
             }
             if (total) {
                 result.total = total;
-                var numTotal = parseFloat(total.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numTotal)) result.total_numeric = numTotal;
+                var parsedTot = parsePrice(total);
+                if (parsedTot) {
+                    result.total_numeric = parsedTot.amount;
+                    if (parsedTot.currency && !result.currency) result.currency = parsedTot.currency;
+                }
             }
             if (delivery) {
                 result.delivery_cost = delivery;
-                var numDel = parseFloat(delivery.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numDel)) result.delivery_numeric = numDel;
+                var parsedDel = parsePrice(delivery);
+                if (parsedDel) result.delivery_numeric = parsedDel.amount;
             }
             if (tax) {
                 result.tax = tax;
-                var numTax = parseFloat(tax.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(numTax)) result.tax_numeric = numTax;
+                var parsedTax = parsePrice(tax);
+                if (parsedTax) result.tax_numeric = parsedTax.amount;
             }
 
             result.order_button_shown = !!firstMatch(doc, FIELD_SEL.checkoutOrderButton);
+
             return result;
         }
 
@@ -2091,7 +2120,7 @@
                 if (isFilterInput) {
                     var isApplied = target.checked;
                     var filterData = {
-                        filter_type: target.name || target.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4')?.textContent.trim() || target.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
+                        filter_type: target.getAttribute('aria-label') || target.name || target.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4, span, strong')?.textContent.trim() || target.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
                         filter_value: target.value || target.nextElementSibling?.textContent?.trim() || 'unknown',
                         active_filter_count_after: document.querySelectorAll('.filters input:checked, .facets input:checked').length
                     };
@@ -2185,7 +2214,7 @@
                     (target.tagName === 'BUTTON' && /^(add to cart|add to bag|add)$/i.test(target.textContent));
 
                 if (isAddBtn) {
-                    var productCard = target.closest('.product-card, .product-tile, [data-product-id], article, [data-automation-id="product-pod"]');
+                    var productCard = target.closest('.product-card, .product-tile, [data-product-id], [data-sku], article, [data-automation-id="product-pod"], #hero');
                     var eventData = { sku: null, surface: "catalog-grid", position: 1, price: null, currency: null };
 
                     if (productCard) {
@@ -2194,14 +2223,24 @@
                             if (siblings[i] === productCard) { eventData.position = i + 1; break; }
                         }
 
-                        var skuEl = firstMatch(productCard, FIELD_SEL.sku);
-                        if (skuEl) {
-                            eventData.sku = skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
-                            if (!eventData.sku && (skuEl.tagName === 'A' || skuEl.hasAttribute('href'))) {
-                                var match = (skuEl.getAttribute('href') || '').match(/\/p\/(?:[^\/]+\/)*(\d+)/);
-                                if (match) eventData.sku = match[1];
+                        // 2-STEP SKU EXTRACTION
+                        var btnSku = target.getAttribute('data-product-id') || target.getAttribute('data-sku') || target.getAttribute('data-cart-id');
+                        if (!btnSku) {
+                            btnSku = productCard.getAttribute('data-product-id') || productCard.getAttribute('data-sku') || productCard.getAttribute('data-cart-id');
+                            if (!btnSku) {
+                                var skuEl = firstMatch(productCard, FIELD_SEL.sku);
+                                if (skuEl) {
+                                    btnSku = skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
+                                    // fallback (SKU-in-href parse)
+                                    if (!btnSku && (skuEl.tagName === 'A' || skuEl.hasAttribute('href'))) {
+                                        var match = (skuEl.getAttribute('href') || '').match(/\/p\/(?:[^\/]+\/)*(\d+)/);
+                                        if (match) btnSku = match[1];
+                                    }
+                                }
                             }
                         }
+                        eventData.sku = btnSku || null;
+
                         var priceEl = firstMatch(productCard, FIELD_SEL.price);
                         if (priceEl) {
                             // Only replace the code inside this block!
@@ -2224,15 +2263,29 @@
 
                 if (isRemoveBtn) {
                     var cartItem = target.closest('.cart-item, [data-automation-id="cart-item"], article');
-                    var removeData = { sku: null, quantity_before_remove: null, displayed_line_total: null };
+                    var removeData = { sku: null, quantity_before_remove: null, line_total: null, currency: null };
 
                     if (cartItem) {
-                        var rSkuEl = firstMatch(cartItem, FIELD_SEL.sku) || cartItem.querySelector('[data-item-id]');
-                        if (rSkuEl) removeData.sku = rSkuEl.getAttribute('data-item-id') || rSkuEl.getAttribute('data-product-id') || rSkuEl.getAttribute('data-sku');
+                        // 2-STEP SKU EXTRACTION
+                        var btnSku = target.getAttribute('data-product-id') || target.getAttribute('data-sku') || target.getAttribute('data-item-id');
+                        if (!btnSku) {
+                            btnSku = cartItem.getAttribute('data-product-id') || cartItem.getAttribute('data-sku') || cartItem.getAttribute('data-item-id');
+                            if (!btnSku) {
+                                var rSkuEl = firstMatch(cartItem, FIELD_SEL.sku) || cartItem.querySelector('[data-item-id]');
+                                if (rSkuEl) btnSku = rSkuEl.getAttribute('data-item-id') || rSkuEl.getAttribute('data-product-id') || rSkuEl.getAttribute('data-sku');
+                            }
+                        }
+                        removeData.sku = btnSku || null;
+
 
                         var lineTotalEl = firstMatch(cartItem, FIELD_SEL.cartItemLineTotal);
-                        if (lineTotalEl) removeData.displayed_line_total = lineTotalEl.textContent.trim();
-
+                        if (lineTotalEl) {
+                            var parsedTotal = parsePrice(lineTotalEl.textContent.trim());
+                            if (parsedTotal) {
+                                removeData.line_total = parsedTotal.amount;
+                                removeData.currency = parsedTotal.currency;
+                            }
+                        }
                         var qtyEl = firstMatch(cartItem, FIELD_SEL.cartItemQuantity);
                         if (qtyEl) {
                             var qVal = qtyEl.getAttribute('aria-valuenow') || qtyEl.value || qtyEl.textContent;
@@ -2250,7 +2303,7 @@
                 if (isFilterLink) {
                     var isRemoving = target.closest('.active-filter, .remove-filter') !== null;
                     var filterClickData = {
-                        filter_type: isFilterLink.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4')?.textContent.trim() || isFilterLink.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
+                        filter_type: isFilterLink.getAttribute('aria-label') || isFilterLink.closest('fieldset, .filter-group, .facet')?.querySelector('legend, h3, h4, span, strong')?.textContent.trim() || isFilterLink.closest('[data-filter-group]')?.getAttribute('data-filter-group') || 'unknown',
                         filter_value: isFilterLink.getAttribute('data-category') || isFilterLink.textContent.trim(),
                         active_filter_count_after: document.querySelectorAll('.active-filter, .filters input:checked').length + (isRemoving ? -1 : 1)
                     };
@@ -2273,7 +2326,7 @@
                     }
 
                     // Check the clickedCard directly first, then look inside it
-                    var cardSku = clickedCard.getAttribute('data-product-id') || clickedCard.getAttribute('data-sku');
+                    var cardSku = clickedCard.getAttribute('data-product-id') || clickedCard.getAttribute('data-sku') || clickedCard.getAttribute('data-cart-id');
                     if (!cardSku) {
                         var cardSkuEl = firstMatch(clickedCard, FIELD_SEL.sku);
                         if (cardSkuEl) cardSku = cardSkuEl.getAttribute('data-product-id') || cardSkuEl.getAttribute('data-sku');
@@ -2335,8 +2388,7 @@
                 var isWishlistBtn = target.closest('.wishlist-button, [data-action="wishlist"], [data-save], button[aria-label*="wishlist" i]');
                 if (isWishlistBtn) {
                     var wlCard = target.closest('.product-card, .product-tile, article, .cart-item');
-                    var wlData = { sku: null, surface: wlCard && wlCard.classList.contains('cart-item') ? "cart" : "catalog-grid", position: 1, displayed_price: null };
-
+                    var wlData = { sku: null, surface: wlCard && wlCard.classList.contains('cart-item') ? "cart" : "catalog-grid", position: 1, price: null, currency: null };
                     if (wlCard) {
                         var wlCardSku = wlCard.getAttribute('data-product-id') || wlCard.getAttribute('data-sku') || wlCard.getAttribute('data-cart-id');
                         if (!wlCardSku) {
@@ -2344,12 +2396,15 @@
                             if (wlSkuEl) wlCardSku = wlSkuEl.getAttribute('data-product-id') || wlSkuEl.getAttribute('data-sku');
                         }
                         wlData.sku = wlCardSku || null;
-
                         var wlPriceEl = firstMatch(wlCard, FIELD_SEL.price) || wlCard.querySelector('.cart-item-price strong');
                         if (wlPriceEl) {
-                            wlData.displayed_price = wlPriceEl.textContent.trim();
+                            // FIX: Added the parsePrice logic!
+                            var parsedWl = parsePrice(wlPriceEl.textContent.trim());
+                            if (parsedWl) {
+                                wlData.price = parsedWl.amount;
+                                wlData.currency = parsedWl.currency;
+                            }
                         }
-
                         var wlSiblings = wlCard.parentElement ? wlCard.parentElement.children : [];
                         for (var m = 0; m < wlSiblings.length; m++) {
                             if (wlSiblings[m] === wlCard) { wlData.position = m + 1; break; }
