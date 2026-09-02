@@ -39,6 +39,7 @@
             domSettleMs: parseInt(_script?.dataset?.domSettleMs ?? '500'),
             endpoint: _script?.dataset?.endpoint ?? 'https://ingest.aiora.systems/v1/signal',
 
+
         };
 
         if (!config.clientId) {
@@ -59,11 +60,53 @@
         // SECTION 3 — SESSION TOKEN
         // In-memory only — never written to any persistent storage.
         // ================================================================
-
         // const sessionToken = crypto.randomUUID(); //when it is in live production
-        const sessionToken = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        /*const sessionToken = (typeof crypto !== 'undefined' && crypto.randomUUID)
             ? crypto.randomUUID()
-            : Math.random().toString(36).substring(2) + Date.now().toString(36);
+            : Math.random().toString(36).substring(2) + Date.now().toString(36);*/
+
+        // ================================================================
+        // NEW: VISIT-STABLE SESSION ID RESOLVER
+        // ================================================================
+        function resolveSessionToken() {
+            var generateUUID = function () {
+                return (typeof crypto !== 'undefined' && crypto.randomUUID)
+                    ? crypto.randomUUID()
+                    : Math.random().toString(36).substring(2) + Date.now().toString(36);
+            };
+
+            try {
+                // Mode A: Look for an enterprise dataLayer session ID
+                if (window.dataLayer) {
+                    for (var i = 0; i < window.dataLayer.length; i++) {
+                        if (window.dataLayer[i].session_id) {
+                            return window.dataLayer[i].session_id;
+                        }
+                    }
+                }
+
+                // Mode B: Use sessionStorage to keep the ID stable across page loads
+                if (window.sessionStorage) {
+                    var storedToken = window.sessionStorage.getItem('aiora_session_id');
+                    if (storedToken) {
+                        return storedToken;
+                    } else {
+                        var newToken = generateUUID();
+                        window.sessionStorage.setItem('aiora_session_id', newToken);
+                        return newToken;
+                    }
+                }
+            } catch (e) {
+                // Ignore Safari Private Browsing errors
+            }
+
+            // Degraded Fallback: Generate a fresh UUID if all else fails
+            return generateUUID();
+        }
+
+        // Apply it GLOBALLY so both Tier 0 and Tier 10 (Interaction Events) use the exact same ID!
+        const sessionToken = resolveSessionToken();
+
 
         // ================================================================
         // SECTION 4 — BEACON GUARD
@@ -193,11 +236,8 @@
             var startTime = performance.now();
             var path = window.location.pathname;
 
-            // Re-use our classification logic to know what page we are on
-            var pageType = 'other';
-            if (path.includes('/cart')) pageType = 'cart';
-            else if (path.includes('/product') || path.includes('/p/')) pageType = 'pdp';
-            else if (path.includes('/search') || path.includes('/category')) pageType = 'search';
+            // COMPREHENSIVE FIX: Actually use the real classifier!
+            var pageType = classifyPageType(path);
 
             // The Checklist Flags
             var hasFoundItems = false;
@@ -208,16 +248,16 @@
             var hardCapTimer = setTimeout(function () {
                 if (observer) observer.disconnect();
                 window.__AIORA_HYDRATION_MS__ = Math.round(performance.now() - startTime);
-                onComplete(); // Fire anyway after 3 seconds if the site is broken
+                onComplete(); // Fire anyway after timeout if the site is broken
             }, config.hydrationTimeout);
 
             // 2. The Smart Element-Level Observer
             var observer = new MutationObserver(function () {
                 var isReadyToFire = false;
 
-                // Cart Page Checklist
-                if (pageType === 'cart') {
-                    if (firstMatch(document, CARD_SELECTORS)) hasFoundItems = true;
+                // Cart & Checkout Page Checklist
+                if (pageType === 'cart' || pageType === 'checkout') {
+                    if (firstMatch(document, CARD_SELECTORS) || firstMatch(document, FIELD_SEL.cartItemName)) hasFoundItems = true;
                     if (firstMatch(document, FIELD_SEL.cartSubtotal) || firstMatch(document, FIELD_SEL.cartTotal)) hasFoundTotal = true;
                     if (document.querySelector('.empty-cart-message, .empty-cart, [data-testid="empty-cart"]')) hasFoundEmptyState = true;
 
@@ -230,8 +270,8 @@
 
                     isReadyToFire = hasFoundItems && hasFoundTotal;
                 }
-                // Search/Category Page Checklist
-                else if (pageType === 'search') {
+                // Grid Pages (Search, Category, Homepage) Checklist
+                else if (pageType === 'search' || pageType === 'category' || pageType === 'homepage') {
                     if (firstMatch(document, CARD_SELECTORS)) hasFoundItems = true;
                     if (document.querySelector('.no-results, .zero-results, .empty-search')) hasFoundEmptyState = true;
 
@@ -337,7 +377,8 @@
         // Safe text content, trimmed and truncated. Returns null if empty.
         function textOf(el, max) {
             if (!el) return null;
-            var t = (el.textContent || '').trim();
+            // NEW: Use regex to crush all newlines/tabs/multi-spaces into a single space!
+            var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
             return t ? t.slice(0, max || 120) : null;
         }
 
@@ -509,7 +550,23 @@
                 var region = document.documentElement.lang || 'unknown';
 
                 // 7. Identity summary (Basic stub until we build Tier 5)
+                // --- NEW: IDENTITY EXTRACTION ---
                 var identitySummary = { state: 'unknown' };
+                var idEl = document.querySelector('[data-identity-state], [data-customer-hash]');
+                if (idEl) {
+                    // If the element exists, dynamically pull all the specs!
+                    identitySummary.state = idEl.getAttribute('data-identity-state') || 'recognized';
+
+                    var tierStr = idEl.getAttribute('data-member-tier');
+                    if (tierStr) identitySummary.member_tier = tierStr;
+
+                    var balStr = idEl.getAttribute('data-loyalty-balance');
+                    if (balStr) identitySummary.loyalty_balance = parseInt(balStr, 10);
+
+                    var hashStr = idEl.getAttribute('data-customer-hash');
+                    if (hashStr) identitySummary.customer_hash = hashStr;
+                }
+
 
                 // 8. Third-party program match (Looking for common UTM/affiliate parameters)
                 var programMatch = null;
@@ -1596,6 +1653,14 @@
         function extractTier4(doc, t1Tiles, t2) {
             try {
                 var signals = {};
+                // --- NEW: TIER 4 WISHLIST EXTRACTION ---
+                var wishlistEl = doc.querySelector('[data-wishlist-count]');
+                if (wishlistEl) {
+                    var wlCountStr = wishlistEl.getAttribute('data-wishlist-count') || wishlistEl.textContent.trim();
+                    if (wlCountStr) {
+                        signals.wishlist_count = parseInt(wlCountStr, 10) || 0;
+                    }
+                }
                 // --- NEW: DIRECTIVE 4 HYDRATION METRICS ---
                 signals.hydration_events = [];
                 if (window.__AIORA_HYDRATION_MS__ >= 0) {
@@ -1652,7 +1717,10 @@
                         if (organicSkus.has(sku)) overlap = true;
                     });
                     if (overlap) signals.sponsored_same_as_organic = true;
+
+
                 }
+
 
                 /*var heroDealName = firstMatch(doc, FIELD_SEL.heroElement);
                 if (heroDealName && t1Tiles && t1Tiles.length) {
@@ -1751,11 +1819,71 @@
                 return signals;
             } catch (e) { return null; }
         }
+        //  10.5  TIER 5 - CUSTOMER / LOYALTY STATE 
+        function extractTier5(doc) {
+            try {
+                var t5 = {};
 
+                // 1. Logged in flag & Component Type (No PII Captured)
+                // We look for a greeting message or account link in the header/DOM
+                var greetingEl = doc.querySelector('.account-greeting, #header-account, [data-identity-state], .user-greeting');
+                if (greetingEl) {
+                    t5.component_type = 'header_chip'; // Assuming it's in the header for Shopora
+                    var greetingText = greetingEl.textContent.trim().toLowerCase();
+
+                    // If the text contains "guest" or "sign in", they are anonymous
+                    if (greetingText.includes('guest') || greetingText.includes('sign in') || greetingText.includes('log in')) {
+                        t5.logged_in = false;
+                    } else {
+                        // If there's a greeting but it doesn't say "guest", assume logged in
+                        t5.logged_in = true;
+                    }
+
+                    // If the frontend explicitly provided our data attribute, use it!
+                    var dataState = greetingEl.getAttribute('data-identity-state');
+                    if (dataState) {
+                        t5.logged_in = (dataState !== 'guest' && dataState !== 'unknown');
+                    }
+                } else {
+                    t5.logged_in = false;
+                    t5.component_type = 'unknown';
+                }
+
+                // 2. Loyalty tier label (string)
+                var tierEl = doc.querySelector('.loyalty-tier, .member-tier, [data-member-tier]');
+                if (tierEl) {
+                    t5.loyalty_tier_label = tierEl.getAttribute('data-member-tier') || tierEl.textContent.trim();
+                }
+
+                // 3. Points balance (numeric)
+                var pointsEl = doc.querySelector('.points-balance, [data-loyalty-balance]');
+                if (pointsEl) {
+                    var ptsStr = pointsEl.getAttribute('data-loyalty-balance') || pointsEl.textContent.replace(/[^0-9]/g, '');
+                    if (ptsStr) t5.points_balance = parseInt(ptsStr, 10);
+                }
+
+                // 4. Tier threshold messaging (string)
+                var thresholdEl = doc.querySelector('.tier-threshold, .points-away, [data-tier-messaging]');
+                if (thresholdEl) {
+                    t5.tier_threshold_messaging = thresholdEl.textContent.trim();
+                }
+
+                // 5. Welcome / new-customer banner presence (boolean)
+                var welcomeBanner = doc.querySelector('.welcome-banner, .new-customer-promo');
+                t5.welcome_banner = !!welcomeBanner; // Converts to boolean true/false
+
+                // 6. Active loyalty discount in cart (boolean)
+                var loyaltyDiscountEl = doc.querySelector('.cart-summary .loyalty-discount, .order-total .member-discount');
+                t5.active_loyalty_discount = !!loyaltyDiscountEl;
+
+                return t5;
+            } catch (e) {
+                return null;
+            }
+        }
 
         // ── 10.5  TIERS 5–9 — STUBS (Phase 2+) ───────────────────────
 
-        function extractTier5() { return null; } // Customer / loyalty state
         function extractTier6() { return null; } // Promotional context
         function extractTier7() { return null; } // Search context
         function extractTier8() { return null; } // Trust / social proof
@@ -1810,7 +1938,7 @@
             var activeTiers = getActiveTiers(pageType);
             var has = function (n) { return activeTiers.indexOf(n) !== -1; };
 
-            var t1 = null, t2 = null, t3 = null, t4 = null;
+            var t1 = null, t2 = null, t3 = null, t4 = null, t5 = null;
 
             if (has(1) && !budget.isOver()) {
                 t1 = extractTier1(doc, pageType); //NEW pagetype
@@ -1834,11 +1962,19 @@
                 if (t4) budget.add(4, t4);
             }
 
+            if (has(5) && !budget.isOver()) {
+                t5 = extractTier5(doc);
+                if (t5) budget.add(5, t5);
+            }
+
+
             var signals = {};
             if (t1 !== null) signals.t1 = t1;
             if (t2 !== null) signals.t2 = t2;
             if (t3 !== null) signals.t3 = t3;
             if (t4 !== null) signals.t4 = t4;
+            if (t5 !== null) signals.t5 = t5;
+
 
             var payload = Object.assign({
                 schema_version: '0.2.0',
@@ -2521,6 +2657,7 @@
                 extractTier2: extractTier2,
                 extractTier3: extractTier3,
                 extractTier4: extractTier4,
+                extractTier5: extractTier5,
                 classifyPageType: classifyPageType,
                 scrubPII: scrubPII,
                 makeBudget: makeBudget,
