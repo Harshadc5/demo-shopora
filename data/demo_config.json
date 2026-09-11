@@ -1,0 +1,101 @@
+{
+    "brands": {
+        "VoltMax": {
+            "category_focus": "electronics"
+        },
+        "PulseTune": {
+            "category_focus": "electronics"
+        },
+        "StreamHub": {
+            "category_focus": "electronics"
+        },
+        "NovaPeak": {
+            "category_focus": "electronics"
+        },
+        "IronCore": {
+            "category_focus": "electronics"
+        },
+        "ClearWave": {
+            "category_focus": "electronics"
+        },
+        "Luna": {
+            "category_focus": "fashion"
+        },
+        "MetroStride": {
+            "category_focus": "fashion"
+        },
+        "Sable&Co": {
+            "category_focus": "fashion"
+        },
+        "Meridian": {
+            "category_focus": "fashion"
+        },
+        "OakLine": {
+            "category_focus": "home"
+        },
+        "HearthWorks": {
+            "category_focus": "home"
+        },
+        "Terra&Co": {
+            "category_focus": "home"
+        },
+        "Belfry": {
+            "category_focus": "home"
+        },
+        "Chapter&Verse": {
+            "category_focus": "books"
+        },
+        "InkPress": {
+            "category_focus": "books"
+        },
+        "Northwind": {
+            "category_focus": "books"
+        }
+    },
+    "shipping": {
+        "free_shipping_threshold": 35.00,
+        "standard_shipping_fee": 5.99,
+        "oversized_shipping_fee": 9.99,
+        "oversized_categories": [
+            "home"
+        ]
+    },
+    "margin_floors_by_category": {
+        "electronics": 0.35,
+        "fashion": 0.40,
+        "home": 0.35,
+        "books": 0.30
+    },
+    "loyalty": {
+        "plus_discount_pct": 5,
+        "tier_names": [
+            "guest",
+            "member",
+            "plus",
+            "gold"
+        ]
+    },
+    "promo_codes": {
+        "WELCOME10": {
+            "type": "percent",
+            "value": 10,
+            "eligibility": "first_order"
+        },
+        "SAVE20": {
+            "type": "percent",
+            "value": 20,
+            "eligibility": "any"
+        },
+        "SAVE50": {
+            "type": "flat",
+            "value": 50,
+            "min_order": 200,
+            "eligibility": "any"
+        },
+        "MEMBER5": {
+            "type": "percent",
+            "value": 5,
+            "eligibility": "member_only"
+        }
+    }
+}
