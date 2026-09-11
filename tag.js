@@ -236,6 +236,14 @@
             var startTime = performance.now();
             var path = window.location.pathname;
 
+            // When a ?demo= param is present, the Shopora demo harness (demo_router.js)
+            // sets window.__AIORA_DEMO_READY__ once its scenario override has fully
+            // landed in the DOM (sync or async). Gate extraction on that flag too, on
+            // top of the normal per-page checklist below, so the tag never captures a
+            // page mid-override. hydrationTimeout still applies as a hard-cap safety
+            // net if the flag is never set. No-op on real (non-demo) pages/sites.
+            var isDemoMode = /[?&]demo=/.test(window.location.search);
+
             // COMPREHENSIVE FIX: Actually use the real classifier!
             var pageType = classifyPageType(path);
 
@@ -282,13 +290,17 @@
                     isReadyToFire = true;
                 }
 
-                // 3. Did we complete the checklist? Stop the observer and send payload!
-                if (isReadyToFire) {
+                // 3. Did we complete the checklist (and, in demo mode, has the
+                // demo harness finished applying its override)? Stop the
+                // observer and send payload!
+                if (isReadyToFire && (!isDemoMode || window.__AIORA_DEMO_READY__)) {
                     observer.disconnect();
                     clearTimeout(hardCapTimer);
                     window.__AIORA_HYDRATION_MS__ = Math.round(performance.now() - startTime);
                     onComplete();
                 }
+
+
             });
 
             // Start watching the DOM instantly!

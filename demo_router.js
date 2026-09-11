@@ -27,14 +27,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!scenario) {
         console.warn(`[AIORA DEMO] Unknown scenario slug: "${demoSlug}"`);
+        window.__AIORA_DEMO_READY__ = true;
         return;
     }
 
     const currentPageType = document.body.dataset.pageType;
-    if (scenario.target_page && scenario.target_page !== currentPageType) return;
+    if (scenario.target_page && scenario.target_page !== currentPageType) {
+        window.__AIORA_DEMO_READY__ = true;
+        return;
+    }
 
     if (scenario.forceIdentity && params.get('identity') !== 'logged-in') {
         forceIdentity(scenario.forceIdentity);
+    }
+
+    // tag.js (see its waitForHydration) holds off extracting the page,
+    // whenever a ?demo= param is present, until this flag is true — so it
+    // never captures mid-override regardless of which scenario/page is
+    // active. Most overrides below are synchronous, but scenario.pdp isn't
+    // (waitForRealPdpHero can take up to its own maxWaitMs), so the flag is
+    // only set once every synchronous AND async override has actually
+    // landed in the DOM.
+    let pendingAsync = 0;
+    function markAsyncDone() {
+        pendingAsync--;
+        if (pendingAsync <= 0) window.__AIORA_DEMO_READY__ = true;
     }
 
     if (scenario.cart) renderCart(scenario.cart);
@@ -42,7 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
-    if (scenario.pdp) waitForRealPdpHero(() => renderPdpOverride(scenario.pdp));  // Pattern 4 (4.1)
+    if (scenario.pdp) {
+        pendingAsync++;
+        waitForRealPdpHero(() => { renderPdpOverride(scenario.pdp); markAsyncDone(); });  // Pattern 4 (4.1)
+    }
     // tiles overrides must run AFTER featuredTiles/real grid are in the DOM
     // — it targets tiles by [data-product-id], which must already exist.
     if (scenario.tiles) applyTileOverrides(scenario.tiles);  // Pattern 3+, 4.1
@@ -50,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.carryDemoForward || scenario.navOverrides) {
         attachDemoNavRouting(demoSlug, scenario.navOverrides, scenario.carryDemoForward);  // Pattern 5 (5.1)
     }
+
+    if (pendingAsync === 0) window.__AIORA_DEMO_READY__ = true;
 });
 
 // Pattern 5 (5.1): app.js's own global click handler already carries
