@@ -1,0 +1,21 @@
+ADD OR CHANGE PRODUCT PHOTOS
+
+1. Copy your photo into this folder.
+   Example: apex-tv.jpg
+
+2. Open data/products.js.
+
+3. Add an image property to that product:
+   image: './assets/products/apex-tv.jpg',
+
+Example:
+{ id: 'el-1', name: 'ApexView TV', image: './assets/products/apex-tv.jpg', ... }
+
+Recommended:
+- JPG, PNG or WebP
+- Square image (800 x 800 or larger)
+- White or light background
+- Keep filenames lowercase without spaces
+
+To change a photo, replace the file using the same filename or update the image path in products.js.
+If image is omitted, SHOPORA uses its existing generated visual.

@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "AIORA Test Suite Catcher",
+  "version": "1.0",
+  "description": "Captures live retail DOMs and sends them to the local Playwright fixtures folder.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:4001/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Capture Page DOM"
+  }
+}

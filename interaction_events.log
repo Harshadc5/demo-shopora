@@ -1,0 +1,2084 @@
+
+--- [2026-08-13T12:53:16.709Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "2d5646dc-1c0f-4895-89ae-49792e22c36f",
+  "client_id": "shopora-prod",
+  "session_token": "3ababd89-3a2c-447c-af1b-84960094c07c",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:53:16.679Z",
+  "sampled": true,
+  "page_type": "homepage",
+  "page_url_path": "/",
+  "sequence_no": 1,
+  "page_heading": "Upgrade your everyday for less.",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "6046506e-b715-4590-8e82-ab4559072a3f",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "homepage",
+    "page_url": "http://127.0.0.1:8080/"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "featured",
+        "name": "VoltMax 15.6\" Laptop",
+        "brand": "VoltMax",
+        "price": 729.99,
+        "currency": "USD",
+        "old_price": 849.99,
+        "has_markdown": true,
+        "badge": "14% OFF",
+        "discount_pct": 14,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $120.00"
+      },
+      {
+        "position": 2,
+        "surface": "featured",
+        "name": "PulseTune Wireless Headphones",
+        "brand": "PulseTune",
+        "price": 89.99,
+        "currency": "USD",
+        "old_price": 119.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 3,
+        "surface": "featured",
+        "name": "Luna Cotton Graphic Tee",
+        "brand": "Luna",
+        "price": 18.99,
+        "currency": "USD",
+        "old_price": 24.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 4,
+        "surface": "featured",
+        "name": "MetroStride Running Shoes",
+        "brand": "MetroStride",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      },
+      {
+        "position": 5,
+        "surface": "featured",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 6,
+        "surface": "featured",
+        "name": "SoftNest Throw Blanket",
+        "brand": "SoftNest",
+        "price": 27.99,
+        "currency": "USD",
+        "old_price": 35.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 7,
+        "surface": "featured",
+        "name": "The Last Library",
+        "brand": "The",
+        "price": 14.99,
+        "currency": "USD",
+        "old_price": 19.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      },
+      {
+        "position": 8,
+        "surface": "featured",
+        "name": "Coding for Everyone",
+        "brand": "Coding",
+        "price": 21.99,
+        "currency": "USD",
+        "old_price": 26.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      }
+    ],
+    "t3": {
+      "total_products": 8,
+      "sponsored_count": 0,
+      "organic_count": 8,
+      "discounted_count": 8,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 14,
+      "discount_pct_max": 25,
+      "discount_pct_median": 22,
+      "price_min": 14.99,
+      "price_max": 729.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "css_hidden_blocks": [
+        {
+          "selector": "sr-only",
+          "gated_copy": "Email address",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Shop electronics, fashion, home essentials and books at SHOPORA with fast delivery and secure checkout."
+      },
+      "raw_url": "http://127.0.0.1:8080/"
+    }
+  },
+  "budget": {
+    "bytes_used": 3562,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:54:15.484Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "3ababd89-3a2c-447c-af1b-84960094c07c",
+  "flush_id": "5c484fb3-b6d4-4427-88af-ee74952564b3",
+  "flush_reason": "unload",
+  "events": [
+    {
+      "event_id": "ca681969-b868-4ed3-8dc7-86e523dfe5ae",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:03.682Z",
+      "page_type": "homepage",
+      "page_url_path": "/",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 1,
+      "displayed_price": null,
+      "displayed_currency": null
+    },
+    {
+      "event_id": "27d5d850-9959-4406-bab5-8b23d7bd859c",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:06.555Z",
+      "page_type": "homepage",
+      "page_url_path": "/",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 4,
+      "displayed_price": "$159.99",
+      "displayed_currency": "$"
+    },
+    {
+      "event_id": "d6222964-46a4-479d-b6e0-9cd0a08c27cc",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:08.227Z",
+      "page_type": "homepage",
+      "page_url_path": "/",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 6,
+      "displayed_price": "$27.99",
+      "displayed_currency": "$"
+    },
+    {
+      "event_id": "3554de4c-c829-4aa5-81d3-57ac8ffd1fb9",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:12.327Z",
+      "page_type": "homepage",
+      "page_url_path": "/",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 7,
+      "displayed_price": "$14.99",
+      "displayed_currency": "$"
+    }
+  ]
+}
+
+--- [2026-08-13T12:54:31.427Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "0b8cdd94-8e73-4906-b8dd-2bdf19522b5c",
+  "client_id": "shopora-prod",
+  "session_token": "9d3bfe93-0a8b-42de-8275-1e852c041e90",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:54:31.411Z",
+  "sampled": true,
+  "page_type": "cart",
+  "page_url_path": "/cart.html",
+  "sequence_no": 1,
+  "page_heading": "Shopping cart",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "0f35f2db-d608-4cee-8ec5-a3903d7ccd03",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "cart",
+    "page_url": "http://127.0.0.1:8080/cart.html"
+  },
+  "signals": {
+    "t1": [],
+    "t2": {
+      "page_context": "cart",
+      "line_items": [
+        {
+          "name": "ApexView 55\" 4K HDR Smart TV",
+          "quantity": 1,
+          "line_total": "$499.99",
+          "price": "$499.99",
+          "old_price": "$599.99",
+          "discount": "17% off"
+        },
+        {
+          "name": "SnapCam 4K Action Camera",
+          "quantity": 1,
+          "line_total": "$159.99",
+          "price": "$159.99",
+          "old_price": "$199.99",
+          "discount": "20% off"
+        },
+        {
+          "name": "PowerCore 10,000mAh Bank",
+          "quantity": 1,
+          "line_total": "$27.99",
+          "price": "$27.99",
+          "old_price": "$34.99",
+          "discount": "20% off"
+        },
+        {
+          "name": "The Last Library",
+          "quantity": 1,
+          "line_total": "$14.99",
+          "price": "$14.99",
+          "old_price": "$19.99",
+          "discount": "25% off"
+        }
+      ],
+      "subtotal": "$702.96",
+      "total": "$702.96",
+      "savings_shown": "$152.00",
+      "delivery_cost": "FREE",
+      "subtotal_numeric": 702.96,
+      "total_numeric": 702.96,
+      "savings_numeric": 152,
+      "item_count": 4,
+      "promo_field_state": "hidden",
+      "promo_field_present": true,
+      "checkout_reachable": true,
+      "shipping_bar_shown": true,
+      "loyalty_balance_rendered": false,
+      "promotions": [
+        {
+          "name": "",
+          "amount": "-$0.00"
+        }
+      ],
+      "shipping_threshold_message": "✓ You unlocked FREE delivery!",
+      "free_shipping_eligibility": "unknown"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 53
+        }
+      ],
+      "cart_math_match": true,
+      "css_hidden_blocks": [
+        {
+          "selector": "summary-row savings",
+          "gated_copy": "Promo\n                                        () Remove-$0.00",
+          "rendered": false
+        }
+      ],
+      "raw_url": "http://127.0.0.1:8080/cart.html"
+    }
+  },
+  "budget": {
+    "bytes_used": 1766,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:54:45.986Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "9d3bfe93-0a8b-42de-8275-1e852c041e90",
+  "flush_id": "2bd399ea-17d2-488c-8d9f-2e928ce9fe9d",
+  "flush_reason": "time",
+  "events": [
+    {
+      "event_id": "bf6115ce-7851-4de6-a976-5f4f63e959ed",
+      "event_type": "quantity_changed",
+      "timestamp": "2026-08-13T12:54:34.741Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": "el-1",
+      "quantity_before": 1,
+      "quantity_after": 2,
+      "line_total_before": "$499.99",
+      "line_total_after": "$999.98"
+    },
+    {
+      "event_id": "7ea48e89-33c5-40e6-85f2-84f8056150e6",
+      "event_type": "quantity_changed",
+      "timestamp": "2026-08-13T12:54:36.370Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": "el-1",
+      "quantity_before": 2,
+      "quantity_after": 3,
+      "line_total_before": "$999.98",
+      "line_total_after": "$1,499.97"
+    },
+    {
+      "event_id": "247a9e8e-a972-420a-844c-31958df753bd",
+      "event_type": "quantity_changed",
+      "timestamp": "2026-08-13T12:54:40.395Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": "el-12",
+      "quantity_before": 1,
+      "quantity_after": 0,
+      "line_total_before": "$27.99",
+      "line_total_after": null
+    },
+    {
+      "event_id": "e1822fd6-5588-4135-8fd4-e493b0429db9",
+      "event_type": "wishlist_added",
+      "timestamp": "2026-08-13T12:54:44.137Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": "bo-1",
+      "surface": "cart",
+      "position": 3,
+      "displayed_price": "$14.99"
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:00.988Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "9d3bfe93-0a8b-42de-8275-1e852c041e90",
+  "flush_id": "a4da82d5-0f88-47dc-8f07-ed0de716e810",
+  "flush_reason": "time",
+  "events": [
+    {
+      "event_id": "b30db87a-596e-49ba-8eb1-1d52819ca39a",
+      "event_type": "remove_from_cart",
+      "timestamp": "2026-08-13T12:54:47.539Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": null,
+      "quantity_before_remove": 1,
+      "displayed_line_total": "$159.99"
+    },
+    {
+      "event_id": "807ca63e-2619-4b7b-9271-2fca3115197a",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:50.097Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 2,
+      "displayed_price": "$29.99",
+      "displayed_currency": "$"
+    },
+    {
+      "event_id": "d8abb42b-193a-4806-a942-e11038ea8d36",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:52.362Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 3,
+      "displayed_price": "$219.99",
+      "displayed_currency": "$"
+    },
+    {
+      "event_id": "554e327e-9a06-4f41-be3f-7dbdfb5aaf51",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:54:54.702Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 4,
+      "displayed_price": "$54.99",
+      "displayed_currency": "$"
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:16.002Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "9d3bfe93-0a8b-42de-8275-1e852c041e90",
+  "flush_id": "a423fece-b9ca-41c6-8115-c61fde4dead9",
+  "flush_reason": "time",
+  "events": [
+    {
+      "event_id": "b2599a17-31c7-4d6b-98cd-bcb9a3d02430",
+      "event_type": "promo_code_applied",
+      "timestamp": "2026-08-13T12:55:10.258Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "code": "wELCOME10",
+      "result": "accepted",
+      "discount_amount_shown": "-$180.49"
+    },
+    {
+      "event_id": "8c32dc56-bf3b-47e9-a8ce-79ff10dbb01d",
+      "event_type": "promo_removed",
+      "timestamp": "2026-08-13T12:55:13.148Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "code": "WELCOME10"
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:16.639Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "9d3bfe93-0a8b-42de-8275-1e852c041e90",
+  "flush_id": "690cc436-a5e6-494b-8a85-ad53fabd1515",
+  "flush_reason": "immediate_navigation",
+  "events": [
+    {
+      "event_id": "11d2e448-e3cc-4ac8-a5a4-142acf0f9128",
+      "event_type": "checkout_initiated",
+      "timestamp": "2026-08-13T12:55:16.628Z",
+      "page_type": "cart",
+      "page_url_path": "/cart.html",
+      "cart_line_count": 4,
+      "cart_displayed_total": "$1,804.94",
+      "cart_displayed_currency": "$"
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:17.465Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "02c3b778-8f35-4304-94c9-672cc1eaa436",
+  "client_id": "shopora-prod",
+  "session_token": "dba74f6c-8086-43d0-947f-ca934a7b6223",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:55:17.449Z",
+  "sampled": true,
+  "page_type": "checkout",
+  "page_url_path": "/checkout.html",
+  "sequence_no": 1,
+  "page_heading": "Checkout",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "aaeef478-1582-4918-af14-f9dd3f9cd23f",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "checkout",
+    "page_url": "http://127.0.0.1:8080/checkout.html"
+  },
+  "signals": {
+    "t1": [],
+    "t2": {
+      "page_context": "checkout",
+      "line_items": [
+        {
+          "name": "ApexView 55\" 4K HDR Smart TV",
+          "price": "$1,499.97",
+          "quantity": "Qty 3"
+        },
+        {
+          "name": "Orbit Pro Gaming Mouse",
+          "price": "$29.99",
+          "quantity": "Qty 1"
+        },
+        {
+          "name": "SwiftPad Tablet 10.5\"",
+          "price": "$219.99",
+          "quantity": "Qty 1"
+        },
+        {
+          "name": "SecureView Indoor Camera",
+          "price": "$54.99",
+          "quantity": "Qty 1"
+        }
+      ],
+      "subtotal": "$1,804.94",
+      "subtotal_numeric": 1804.94,
+      "total": "$1,804.94",
+      "total_numeric": 1804.94,
+      "delivery_cost": "FREE",
+      "order_button_shown": true
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "cart_math_match": true,
+      "css_hidden_blocks": [
+        {
+          "selector": "summary-row savings",
+          "gated_copy": "Promo () Remove-$0.00",
+          "rendered": false
+        }
+      ],
+      "raw_url": "http://127.0.0.1:8080/checkout.html"
+    }
+  },
+  "budget": {
+    "bytes_used": 1189,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:55:26.391Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "dba74f6c-8086-43d0-947f-ca934a7b6223",
+  "flush_id": "d2a55863-f388-4f18-bece-61c2d8ce388b",
+  "flush_reason": "immediate_navigation",
+  "events": [
+    {
+      "event_id": "5349c1b7-6e6f-4884-9a00-1b6ca7533cb4",
+      "event_type": "purchase_completed",
+      "timestamp": "2026-08-13T12:55:26.164Z",
+      "page_type": "checkout",
+      "page_url_path": "/checkout.html",
+      "order_confirmed": true,
+      "order_total_displayed": "$1,804.94",
+      "order_currency": "$",
+      "line_item_count": 4
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:31.254Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "8ab39f35-8b4e-4a1f-bd38-becdab70ab70",
+  "client_id": "shopora-prod",
+  "session_token": "1c5a6486-764f-4525-a7c7-86e0aff346c7",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:55:31.231Z",
+  "sampled": true,
+  "page_type": "homepage",
+  "page_url_path": "/index.html",
+  "sequence_no": 1,
+  "page_heading": "Upgrade your everyday for less.",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "a980e605-52ac-433d-847d-79517d17042c",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "homepage",
+    "page_url": "http://127.0.0.1:8080/index.html"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "featured",
+        "name": "VoltMax 15.6\" Laptop",
+        "brand": "VoltMax",
+        "price": 729.99,
+        "currency": "USD",
+        "old_price": 849.99,
+        "has_markdown": true,
+        "badge": "14% OFF",
+        "discount_pct": 14,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $120.00"
+      },
+      {
+        "position": 2,
+        "surface": "featured",
+        "name": "PulseTune Wireless Headphones",
+        "brand": "PulseTune",
+        "price": 89.99,
+        "currency": "USD",
+        "old_price": 119.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 3,
+        "surface": "featured",
+        "name": "Luna Cotton Graphic Tee",
+        "brand": "Luna",
+        "price": 18.99,
+        "currency": "USD",
+        "old_price": 24.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 4,
+        "surface": "featured",
+        "name": "MetroStride Running Shoes",
+        "brand": "MetroStride",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      },
+      {
+        "position": 5,
+        "surface": "featured",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 6,
+        "surface": "featured",
+        "name": "SoftNest Throw Blanket",
+        "brand": "SoftNest",
+        "price": 27.99,
+        "currency": "USD",
+        "old_price": 35.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 7,
+        "surface": "featured",
+        "name": "The Last Library",
+        "brand": "The",
+        "price": 14.99,
+        "currency": "USD",
+        "old_price": 19.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      },
+      {
+        "position": 8,
+        "surface": "featured",
+        "name": "Coding for Everyone",
+        "brand": "Coding",
+        "price": 21.99,
+        "currency": "USD",
+        "old_price": 26.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      }
+    ],
+    "t3": {
+      "total_products": 8,
+      "sponsored_count": 0,
+      "organic_count": 8,
+      "discounted_count": 8,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 14,
+      "discount_pct_max": 25,
+      "discount_pct_median": 22,
+      "price_min": 14.99,
+      "price_max": 729.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "css_hidden_blocks": [
+        {
+          "selector": "sr-only",
+          "gated_copy": "Email address",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Shop electronics, fashion, home essentials and books at SHOPORA with fast delivery and secure checkout."
+      },
+      "raw_url": "http://127.0.0.1:8080/index.html"
+    }
+  },
+  "budget": {
+    "bytes_used": 3582,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:55:37.022Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "1c5a6486-764f-4525-a7c7-86e0aff346c7",
+  "flush_id": "ac47c3f7-abdc-41e0-8a49-f0e81e2a18b0",
+  "flush_reason": "immediate_navigation",
+  "events": [
+    {
+      "event_id": "3f4aff83-7d98-4f15-b855-34c65597f158",
+      "event_type": "product_card_clicked",
+      "timestamp": "2026-08-13T12:55:37.016Z",
+      "page_type": "homepage",
+      "page_url_path": "/index.html",
+      "sku": "el-4",
+      "surface": "catalog-grid",
+      "position": 3,
+      "displayed_price": "$19.99",
+      "displayed_currency": "$"
+    }
+  ]
+}
+
+--- [2026-08-13T12:55:37.828Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "2836e750-47d3-4ccb-9d4f-4544d886f8c6",
+  "client_id": "shopora-prod",
+  "session_token": "46f643ef-7c5c-487a-ad6d-ae644aff7e4f",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:55:37.814Z",
+  "sampled": true,
+  "page_type": "pdp",
+  "page_url_path": "/pdp.html?id=el-4",
+  "sequence_no": 1,
+  "page_heading": "NeoCharge 20W Fast Charger",
+  "breadcrumb": [
+    "HOME /",
+    "ELECTRONICS /",
+    "NEOCHARGE"
+  ],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "e9286d42-d233-4540-83c8-a90531cef34e",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "pdp",
+    "page_url": "http://127.0.0.1:8080/pdp.html?id=el-4"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "hero",
+        "name": "Product Specifications",
+        "brand": "NeoCharge Official",
+        "price": 19.99,
+        "currency": "USD",
+        "old_price": 29.99,
+        "has_markdown": true,
+        "badge": "SAVE 33%",
+        "discount_pct": 33,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "Order within 5 hrs",
+        "visible_category_words": [
+          "electronics"
+        ],
+        "badges": [
+          "• High Demand"
+        ]
+      }
+    ],
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "css_hidden_blocks": [
+        {
+          "selector": "pdp-accordion-content",
+          "gated_copy": "Standard Delivery: 3-5 business days. Free for orders over $50.\n                \n                \n  ",
+          "rendered": false
+        }
+      ],
+      "raw_url": "http://127.0.0.1:8080/pdp.html?id=el-4"
+    }
+  },
+  "budget": {
+    "bytes_used": 1177,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:55:50.948Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "46f643ef-7c5c-487a-ad6d-ae644aff7e4f",
+  "flush_id": "c003db70-203b-42f3-a290-cb58291cd358",
+  "flush_reason": "unload",
+  "events": [
+    {
+      "event_id": "4e962197-ebc5-4cb5-9453-d08636560650",
+      "event_type": "add_to_cart",
+      "timestamp": "2026-08-13T12:55:46.487Z",
+      "page_type": "pdp",
+      "page_url_path": "/pdp.html",
+      "sku": null,
+      "surface": "catalog-grid",
+      "position": 1,
+      "displayed_price": null,
+      "displayed_currency": null
+    }
+  ]
+}
+
+--- [2026-08-13T12:56:02.682Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "a3e382a9-b4e9-4544-ad29-a48dd1152e06",
+  "client_id": "shopora-prod",
+  "session_token": "a60d562f-e65a-49d7-9171-0f8ed2b648a9",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:56:02.662Z",
+  "sampled": true,
+  "page_type": "homepage",
+  "page_url_path": "/index.html",
+  "sequence_no": 1,
+  "page_heading": "Upgrade your everyday for less.",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "26b97b32-41f3-4716-ad4f-7227a2c77b6d",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "homepage",
+    "page_url": "http://127.0.0.1:8080/index.html"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "featured",
+        "name": "VoltMax 15.6\" Laptop",
+        "brand": "VoltMax",
+        "price": 729.99,
+        "currency": "USD",
+        "old_price": 849.99,
+        "has_markdown": true,
+        "badge": "14% OFF",
+        "discount_pct": 14,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $120.00"
+      },
+      {
+        "position": 2,
+        "surface": "featured",
+        "name": "PulseTune Wireless Headphones",
+        "brand": "PulseTune",
+        "price": 89.99,
+        "currency": "USD",
+        "old_price": 119.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 3,
+        "surface": "featured",
+        "name": "Luna Cotton Graphic Tee",
+        "brand": "Luna",
+        "price": 18.99,
+        "currency": "USD",
+        "old_price": 24.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 4,
+        "surface": "featured",
+        "name": "MetroStride Running Shoes",
+        "brand": "MetroStride",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      },
+      {
+        "position": 5,
+        "surface": "featured",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 6,
+        "surface": "featured",
+        "name": "SoftNest Throw Blanket",
+        "brand": "SoftNest",
+        "price": 27.99,
+        "currency": "USD",
+        "old_price": 35.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 7,
+        "surface": "featured",
+        "name": "The Last Library",
+        "brand": "The",
+        "price": 14.99,
+        "currency": "USD",
+        "old_price": 19.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      },
+      {
+        "position": 8,
+        "surface": "featured",
+        "name": "Coding for Everyone",
+        "brand": "Coding",
+        "price": 21.99,
+        "currency": "USD",
+        "old_price": 26.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      }
+    ],
+    "t3": {
+      "total_products": 8,
+      "sponsored_count": 0,
+      "organic_count": 8,
+      "discounted_count": 8,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 14,
+      "discount_pct_max": 25,
+      "discount_pct_median": 22,
+      "price_min": 14.99,
+      "price_max": 729.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "css_hidden_blocks": [
+        {
+          "selector": "sr-only",
+          "gated_copy": "Email address",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Shop electronics, fashion, home essentials and books at SHOPORA with fast delivery and secure checkout."
+      },
+      "raw_url": "http://127.0.0.1:8080/index.html"
+    }
+  },
+  "budget": {
+    "bytes_used": 3582,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:56:08.660Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "a60d562f-e65a-49d7-9171-0f8ed2b648a9",
+  "flush_id": "80b710b3-984c-4c23-a877-ec8002c62f51",
+  "flush_reason": "immediate_navigation",
+  "events": [
+    {
+      "event_id": "e81d8147-9acb-4fd6-93db-5c6169f9d303",
+      "event_type": "search_submitted",
+      "timestamp": "2026-08-13T12:56:08.609Z",
+      "page_type": "homepage",
+      "page_url_path": "/index.html",
+      "query": "table",
+      "category_scope": "All",
+      "submission_surface": "header-search"
+    }
+  ]
+}
+
+--- [2026-08-13T12:56:09.249Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "851891da-1f7b-4099-9aa8-2a841103d582",
+  "client_id": "shopora-prod",
+  "session_token": "c4f1a4e9-8b5d-4034-906c-67aa6ee9d18a",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:56:09.236Z",
+  "sampled": true,
+  "page_type": "category",
+  "page_url_path": "/category.html?q=table",
+  "sequence_no": 1,
+  "page_heading": "Search results for \"table\"",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "c973b6e9-1df9-44a7-9583-bdd79e1c0f7e",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": "table",
+  "program_match": null,
+  "page": {
+    "page_type": "category",
+    "page_url": "http://127.0.0.1:8080/category.html?q=table"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "catalog-grid",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 2,
+        "surface": "catalog-grid",
+        "name": "LuxeGlow Table Lamp",
+        "brand": "LuxeGlow",
+        "price": 39.99,
+        "currency": "USD",
+        "old_price": 49.99,
+        "has_markdown": true,
+        "badge": "20% OFF",
+        "discount_pct": 20,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $10.00"
+      },
+      {
+        "position": 3,
+        "surface": "catalog-grid",
+        "name": "MarbleTone Side Table",
+        "brand": "MarbleTone",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      }
+    ],
+    "t3": {
+      "total_products": 3,
+      "sponsored_count": 0,
+      "organic_count": 3,
+      "discounted_count": 3,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 19,
+      "discount_pct_max": 21,
+      "discount_pct_median": 20,
+      "price_min": 39.99,
+      "price_max": 129.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "result_count_stated": 3,
+      "result_count_rendered": 3,
+      "result_count_match": true,
+      "css_hidden_blocks": [
+        {
+          "selector": "empty-results",
+          "gated_copy": "⌕\n                                        No products found\n                                        ",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Browse and filter all SHOPORA products."
+      },
+      "raw_url": "http://127.0.0.1:8080/category.html?q=table"
+    }
+  },
+  "budget": {
+    "bytes_used": 2168,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:56:39.263Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "c4f1a4e9-8b5d-4034-906c-67aa6ee9d18a",
+  "flush_id": "d4593704-83bb-48a9-b0eb-6173ae9ce3d8",
+  "flush_reason": "time",
+  "events": [
+    {
+      "event_id": "f06881bc-375e-4c8f-9ac1-a414e776c45d",
+      "event_type": "wishlist_added",
+      "timestamp": "2026-08-13T12:56:36.078Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "sku": "el-7",
+      "surface": "catalog-grid",
+      "position": 1,
+      "displayed_price": "$159.99"
+    },
+    {
+      "event_id": "415ae7c0-bbc9-40a7-8dc2-ec9897978ad6",
+      "event_type": "filter_applied",
+      "timestamp": "2026-08-13T12:56:38.571Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "filter_type": "categoryFilters",
+      "filter_value": "home",
+      "active_filter_count_after": 1
+    }
+  ]
+}
+
+--- [2026-08-13T12:56:54.047Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "c4f1a4e9-8b5d-4034-906c-67aa6ee9d18a",
+  "flush_id": "e5546f83-a8e6-4d28-a79b-86d1da5f3fae",
+  "flush_reason": "pagehide",
+  "events": [
+    {
+      "event_id": "a3689928-0701-4515-9c32-ff2efe542c16",
+      "event_type": "filter_applied",
+      "timestamp": "2026-08-13T12:56:40.208Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "filter_type": "categoryFilters",
+      "filter_value": "fashion",
+      "active_filter_count_after": 1
+    },
+    {
+      "event_id": "418c444e-6cc2-473d-8649-bfec704a6acb",
+      "event_type": "filter_applied",
+      "timestamp": "2026-08-13T12:56:41.838Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "filter_type": "categoryFilters",
+      "filter_value": "electronics",
+      "active_filter_count_after": 1
+    },
+    {
+      "event_id": "8ed5eb6c-57db-4c7e-9069-05dea0a7160a",
+      "event_type": "filter_applied",
+      "timestamp": "2026-08-13T12:56:46.978Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "filter_type": "categoryFilters",
+      "filter_value": "all",
+      "active_filter_count_after": 1
+    },
+    {
+      "event_id": "70bde533-3219-4887-a867-2095394f7984",
+      "event_type": "quick_view_opened",
+      "timestamp": "2026-08-13T12:56:50.055Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "sku": "el-7",
+      "surface": "catalog-grid",
+      "position": 1
+    }
+  ]
+}
+
+--- [2026-08-13T12:56:54.585Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "3b676812-dd39-4deb-b76c-0dfff33c9ffc",
+  "client_id": "shopora-prod",
+  "session_token": "4e5ea0d1-3970-4e40-b495-a8e46d57cd6a",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:56:54.577Z",
+  "sampled": true,
+  "page_type": "homepage",
+  "page_url_path": "/index.html",
+  "sequence_no": 1,
+  "page_heading": "Upgrade your everyday for less.",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "9206826e-a3bd-4c98-b153-9e646de21109",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "homepage",
+    "page_url": "http://127.0.0.1:8080/index.html"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "featured",
+        "name": "VoltMax 15.6\" Laptop",
+        "brand": "VoltMax",
+        "price": 729.99,
+        "currency": "USD",
+        "old_price": 849.99,
+        "has_markdown": true,
+        "badge": "14% OFF",
+        "discount_pct": 14,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $120.00"
+      },
+      {
+        "position": 2,
+        "surface": "featured",
+        "name": "PulseTune Wireless Headphones",
+        "brand": "PulseTune",
+        "price": 89.99,
+        "currency": "USD",
+        "old_price": 119.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 3,
+        "surface": "featured",
+        "name": "Luna Cotton Graphic Tee",
+        "brand": "Luna",
+        "price": 18.99,
+        "currency": "USD",
+        "old_price": 24.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 4,
+        "surface": "featured",
+        "name": "MetroStride Running Shoes",
+        "brand": "MetroStride",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      },
+      {
+        "position": 5,
+        "surface": "featured",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 6,
+        "surface": "featured",
+        "name": "SoftNest Throw Blanket",
+        "brand": "SoftNest",
+        "price": 27.99,
+        "currency": "USD",
+        "old_price": 35.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 7,
+        "surface": "featured",
+        "name": "The Last Library",
+        "brand": "The",
+        "price": 14.99,
+        "currency": "USD",
+        "old_price": 19.99,
+        "has_markdown": true,
+        "badge": "25% OFF",
+        "discount_pct": 25,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      },
+      {
+        "position": 8,
+        "surface": "featured",
+        "name": "Coding for Everyone",
+        "brand": "Coding",
+        "price": 21.99,
+        "currency": "USD",
+        "old_price": 26.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $5.00"
+      }
+    ],
+    "t3": {
+      "total_products": 8,
+      "sponsored_count": 0,
+      "organic_count": 8,
+      "discounted_count": 8,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 14,
+      "discount_pct_max": 25,
+      "discount_pct_median": 22,
+      "price_min": 14.99,
+      "price_max": 729.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "css_hidden_blocks": [
+        {
+          "selector": "sr-only",
+          "gated_copy": "Email address",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Shop electronics, fashion, home essentials and books at SHOPORA with fast delivery and secure checkout."
+      },
+      "raw_url": "http://127.0.0.1:8080/index.html"
+    }
+  },
+  "budget": {
+    "bytes_used": 3582,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:57:06.511Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "4e5ea0d1-3970-4e40-b495-a8e46d57cd6a",
+  "flush_id": "cb165b8d-8d2f-4bcd-979d-6af82724d012",
+  "flush_reason": "pagehide",
+  "events": [
+    {
+      "event_id": "c2160883-5c95-4c5f-9000-999ab2572223",
+      "event_type": "quick_view_opened",
+      "timestamp": "2026-08-13T12:56:57.164Z",
+      "page_type": "homepage",
+      "page_url_path": "/index.html",
+      "sku": "ho-4",
+      "surface": "catalog-grid",
+      "position": 6
+    },
+    {
+      "event_id": "9e083a5d-296b-4fc6-a669-f3bd6adb978a",
+      "event_type": "quick_view_opened",
+      "timestamp": "2026-08-13T12:57:00.800Z",
+      "page_type": "homepage",
+      "page_url_path": "/index.html",
+      "sku": "bo-10",
+      "surface": "catalog-grid",
+      "position": 8
+    }
+  ]
+}
+
+--- [2026-08-13T12:57:07.056Z] PAYLOAD: tier0-9 ---
+{
+  "schema_version": "0.2.0",
+  "beacon_id": "e2f65d56-d6d9-4e91-b0f4-6c2441537dcf",
+  "client_id": "shopora-prod",
+  "session_token": "3fc2a7b9-7584-456f-870d-62f6b5084210",
+  "tag_version": "0.2.0",
+  "timestamp": "2026-08-13T12:57:07.033Z",
+  "sampled": true,
+  "page_type": "category",
+  "page_url_path": "/category.html?category=home",
+  "sequence_no": 1,
+  "page_heading": "Home Decor",
+  "breadcrumb": [],
+  "viewport": {
+    "width": 1790,
+    "height": 950
+  },
+  "surface_id": "1d407e74-7409-48db-afe5-911e86866e98",
+  "region": "en",
+  "identity_summary": {
+    "state": "unknown"
+  },
+  "visible_query": null,
+  "program_match": null,
+  "page": {
+    "page_type": "category",
+    "page_url": "http://127.0.0.1:8080/category.html?category=home"
+  },
+  "signals": {
+    "t1": [
+      {
+        "position": 1,
+        "surface": "catalog-grid",
+        "name": "SoftNest Throw Blanket",
+        "brand": "SoftNest",
+        "price": 27.99,
+        "currency": "USD",
+        "old_price": 35.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 2,
+        "surface": "catalog-grid",
+        "name": "PebbleBath Towel Set",
+        "brand": "PebbleBath",
+        "price": 31.99,
+        "currency": "USD",
+        "old_price": 41.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $10.00"
+      },
+      {
+        "position": 3,
+        "surface": "catalog-grid",
+        "name": "OakLine Coffee Table",
+        "brand": "OakLine",
+        "price": 129.99,
+        "currency": "USD",
+        "old_price": 159.99,
+        "has_markdown": true,
+        "badge": "19% OFF",
+        "discount_pct": 19,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $30.00"
+      },
+      {
+        "position": 4,
+        "surface": "catalog-grid",
+        "name": "SparkStone Candle Set",
+        "brand": "SparkStone",
+        "price": 22.99,
+        "currency": "USD",
+        "old_price": 28.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 5,
+        "surface": "catalog-grid",
+        "name": "LuxeGlow Table Lamp",
+        "brand": "LuxeGlow",
+        "price": 39.99,
+        "currency": "USD",
+        "old_price": 49.99,
+        "has_markdown": true,
+        "badge": "20% OFF",
+        "discount_pct": 20,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $10.00"
+      },
+      {
+        "position": 6,
+        "surface": "catalog-grid",
+        "name": "MarbleTone Side Table",
+        "brand": "MarbleTone",
+        "price": 74.99,
+        "currency": "USD",
+        "old_price": 94.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $20.00"
+      },
+      {
+        "position": 7,
+        "surface": "catalog-grid",
+        "name": "NestGrid Storage Basket",
+        "brand": "NestGrid",
+        "price": 19.99,
+        "currency": "USD",
+        "old_price": 25.99,
+        "has_markdown": true,
+        "badge": "23% OFF",
+        "discount_pct": 23,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      },
+      {
+        "position": 8,
+        "surface": "catalog-grid",
+        "name": "AuraMirror Wall Mirror",
+        "brand": "AuraMirror",
+        "price": 59.99,
+        "currency": "USD",
+        "old_price": 74.99,
+        "has_markdown": true,
+        "badge": "20% OFF",
+        "discount_pct": 20,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $15.00"
+      },
+      {
+        "position": 9,
+        "surface": "catalog-grid",
+        "name": "FrameLine Wall Art Set",
+        "brand": "FrameLine",
+        "price": 44.99,
+        "currency": "USD",
+        "old_price": 56.99,
+        "has_markdown": true,
+        "badge": "21% OFF",
+        "discount_pct": 21,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $12.00"
+      },
+      {
+        "position": 10,
+        "surface": "catalog-grid",
+        "name": "SlateLine Shelf Organizer",
+        "brand": "SlateLine",
+        "price": 26.99,
+        "currency": "USD",
+        "old_price": 34.99,
+        "has_markdown": true,
+        "badge": "23% OFF",
+        "discount_pct": 23,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $8.00"
+      },
+      {
+        "position": 11,
+        "surface": "catalog-grid",
+        "name": "Cinder Ceramic Vase",
+        "brand": "Cinder",
+        "price": 24.99,
+        "currency": "USD",
+        "old_price": 31.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $7.00"
+      },
+      {
+        "position": 12,
+        "surface": "catalog-grid",
+        "name": "PureDrop Humidifier",
+        "brand": "PureDrop",
+        "price": 49.99,
+        "currency": "USD",
+        "old_price": 64.99,
+        "has_markdown": true,
+        "badge": "23% OFF",
+        "discount_pct": 23,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $15.00"
+      },
+      {
+        "position": 13,
+        "surface": "catalog-grid",
+        "name": "CloudSeat Cushion Set",
+        "brand": "CloudSeat",
+        "price": 29.99,
+        "currency": "USD",
+        "old_price": 38.99,
+        "has_markdown": true,
+        "badge": "23% OFF",
+        "discount_pct": 23,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $9.00"
+      },
+      {
+        "position": 14,
+        "surface": "catalog-grid",
+        "name": "BreezeCurtain Panel Pair",
+        "brand": "BreezeCurtain",
+        "price": 34.99,
+        "currency": "USD",
+        "old_price": 44.99,
+        "has_markdown": true,
+        "badge": "22% OFF",
+        "discount_pct": 22,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $10.00"
+      },
+      {
+        "position": 15,
+        "surface": "catalog-grid",
+        "name": "KitchenBloom Herb Planter",
+        "brand": "KitchenBloom",
+        "price": 18.99,
+        "currency": "USD",
+        "old_price": 24.99,
+        "has_markdown": true,
+        "badge": "24% OFF",
+        "discount_pct": 24,
+        "availability": "in-stock",
+        "sponsored": false,
+        "delivery_promise": "FREE delivery Tomorrow",
+        "discount_amount": "Save $6.00"
+      }
+    ],
+    "t3": {
+      "total_products": 15,
+      "sponsored_count": 0,
+      "organic_count": 15,
+      "discounted_count": 15,
+      "full_price_count": 0,
+      "out_of_stock_count": 0,
+      "low_stock_count": 0,
+      "discount_pct_min": 19,
+      "discount_pct_max": 24,
+      "discount_pct_median": 22,
+      "price_min": 18.99,
+      "price_max": 129.99,
+      "price_currency": "USD"
+    },
+    "t4": {
+      "hydration_events": [
+        {
+          "metric": "cart_hydration_time_ms",
+          "value": 0
+        }
+      ],
+      "result_count_stated": 15,
+      "result_count_rendered": 15,
+      "result_count_match": true,
+      "css_hidden_blocks": [
+        {
+          "selector": "empty-results",
+          "gated_copy": "⌕\n                                        No products found\n                                        ",
+          "rendered": false
+        }
+      ],
+      "metadata": {
+        "meta_description": "Browse and filter all SHOPORA products."
+      },
+      "raw_url": "http://127.0.0.1:8080/category.html?category=home"
+    }
+  },
+  "budget": {
+    "bytes_used": 5970,
+    "hard_cap": 51200,
+    "tiers_dropped": []
+  },
+  "privacy_metadata": {
+    "pii_scrubbing_version": "0.2.0",
+    "local_scrubbing_applied": true,
+    "inputs_scrubbed": true,
+    "scripts_removed": true,
+    "styles_removed": true,
+    "persistent_storage_used": false
+  }
+}
+
+--- [2026-08-13T12:57:16.380Z] PAYLOAD: interaction_events ---
+{
+  "envelope_type": "interaction_events",
+  "schema_version": "0.2.0",
+  "tag_version": "0.2.0",
+  "client_id": "shopora-prod",
+  "session_token": "3fc2a7b9-7584-456f-870d-62f6b5084210",
+  "flush_id": "20ec4fc1-3d55-4aac-bb14-5f369e7b556c",
+  "flush_reason": "unload",
+  "events": [
+    {
+      "event_id": "7744e967-cbb9-4156-b93d-86f18392acbe",
+      "event_type": "sort_changed",
+      "timestamp": "2026-08-13T12:57:10.063Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "sort_value": "Price: high to low"
+    },
+    {
+      "event_id": "f44f53ee-a6b3-4d5b-9cca-9ccf2228fe64",
+      "event_type": "sort_changed",
+      "timestamp": "2026-08-13T12:57:12.572Z",
+      "page_type": "category",
+      "page_url_path": "/category.html",
+      "sort_value": "Customer rating"
+    }
+  ]
+}
