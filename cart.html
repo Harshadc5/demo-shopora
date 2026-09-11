@@ -9,8 +9,9 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
                 rel="stylesheet">
-        <link rel="stylesheet" href="https://shopora-xi-opal.vercel.app/styles.css?v=5">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+        <link rel="stylesheet" href="./styles.css?v=21">
+        <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+
 </head>
 
 <body data-page-type="cart">
@@ -19,6 +20,9 @@
         <header class="site-header compact-header">
                 <div class="nav-shell"><a class="brand" href="./index.html"><span
                                         class="brand-mark">S</span><span>SHOPORA<small>smart shopping</small></span></a>
+                        <div style="display:none;"><a href="./account.html" class="account-chip"
+                                        data-identity-state="guest"><span class="greeting">Hello, guest</span><strong
+                                                class="account-label">Account</strong></a></div>
                         <div class="checkout-steps" aria-label="Checkout progress"><span class="active">1.
                                         Cart</span><i></i><span>2. Details</span><i></i><span>3. Confirmation</span>
                         </div>
@@ -41,13 +45,13 @@
                         <div class="summary-row"><span>Items (<span id="summaryItems">0</span>)</span><strong
                                         id="summarySubtotal">$0.00</strong></div>
                         <div class="summary-row"><span>Delivery</span><strong id="summaryDelivery">$0.00</strong></div>
-                        <div class="summary-row savings"><span>You save</span><strong id="summarySavings">$0.00</strong>
-                        </div>
                         <div class="summary-row savings" id="promoRow" hidden><span>Promo
                                         (<span id="promoCodeName" class="promo-name"></span>) <button
                                                 id="removePromoBtn" class="text-button"
                                                 style="color:var(--red); font-size:0.65rem; padding:0; margin-left:0.25rem;">Remove</button></span><strong
                                         id="summaryPromo" class="promo-amount">-$0.00</strong></div>
+                        <div class="summary-row savings"><span>You save</span><strong id="summarySavings">$0.00</strong>
+                        </div>
 
                         <div class="summary-row total"><span>Order total</span><strong id="summaryTotal">$0.00</strong>
                         </div>
@@ -93,7 +97,8 @@
         </template>
         <div id="toastRegion" class="toast-region" aria-live="polite"></div>
         <div id="quickViewModal" class="modal" hidden=""></div>
-        <script type="module" src="./app.js"></script>
+        <script type="module" src="./app.js?v=24"></script>
+        <script type="module" src="./demo_router.js?v=27"></script>
         <!-- AIORA JS Tag — coordination failure signal collector -->
         <script src="tag.js" data-client-id="shopora-prod" data-endpoint="http://localhost:4001/api/collect"
                 data-sampling-rate="1.0" async=""></script>

@@ -628,7 +628,7 @@
 
             // Existing Tier 1
             sku: ['[data-product-id]', '[data-sku]', '[data-product]', 'a[href*="/p/"]', '[class*="model"]', '.model-number'],
-            name: ['[data-testid="attribute-product-label"]', 'h3', '.product-name', '[class*="name"]'],
+            name: ['[data-testid="attribute-product-label"]', '.product-title', 'h1', 'h3', '.product-name', '[class*="name"]'],
             brand: ['[data-testid="attribute-brandname-inline"]', '.product-brand', '[class*="brand"]'],
             price: ['[data-testid="price-simple"]', '[data-automation-id="itemPrice"]', '.price-stack strong', '.deal-price strong', '[class*="price"] strong', '.price-current', '.price'],
             oldPrice: ['.price-stack del', 'del', '[class*="old-price"]', '.price-was', '.sui-line-through'],
@@ -662,8 +662,7 @@
             promoInput: ['input[name*="discount"]', 'input[name*="coupon"]', '#promoCode', '.promo-input', '#promoInput'],
             altPaymentButtons: ['[data-testid*="apple"]', '.apple-pay', '#applePay', '.paypal-button', '[data-payment-method="google-pay"]', '.alt-payment'],
             promoInlineReason: ['.promo-error', '.discount-error', '.inline-error', '[data-automation-id="promoError"]'],
-            loyaltyBalance: ['.loyalty-balance', '.points-balance', '[data-automation-id="loyaltyPointsBalance"]'],
-
+            loyaltyBalance: ['.loyalty-balance', '.points-balance', '[data-automation-id="loyaltyPointsBalance"]', '[data-loyalty-balance]'],
 
             // NEW: Tier 2 Cart Line Items
             cartItemName: ['[data-automation-id="productDescription"]', 'h3'],
@@ -689,9 +688,21 @@
             resultCount: ['[class*="result-count"]', '.results-count', '#resultCount'],
             pageHeading: ['h1'],
             activeFilter: ['.filter.active', '[aria-current="page"]', '.active-filter'],
-            cartItemLabel: ['#cartItemLabel']
+            cartItemLabel: ['#cartItemLabel'],
 
 
+            // NEW: Tier 6 Promotional context
+            announcementBar: ['.announcement span', '.announcement-bar span', '.top-bar span'],
+            heroModule: ['.hero'],
+            heroHeadline: ['.hero-copy h1', '.hero h1'],
+            heroSubheading: ['.hero-copy p', '.hero p'],
+            heroOfferText: ['.hero-offer'],
+            heroCta: ['.hero-actions a', '.hero a.button'],
+            promoBanner: ['.promo-banner', '[data-module-type="banner"]'],
+            dealChip: ['.deal-chip'],
+            scarcityMsg: ['.scarcity-msg', '.urgency-msg', '[class*="scarcity"]'],
+            countdown: ['.countdown', '[data-deadline-timestamp]', '.countdown-timer'],
+            countdownValue: ['.countdown-value', '#dealTimer'],
 
 
         };
@@ -747,7 +758,8 @@
             return false;
         }
 
-        function extractSku(card) {
+        // In this code, the id/sku isnt extracted in T1 signal
+        /*function extractSku(card) {
             var el = firstMatch(card, FIELD_SEL.sku);
             if (!el) return null;
             var sku = el.getAttribute('data-product-id') || el.getAttribute('data-sku') || el.getAttribute('data-product');
@@ -758,18 +770,55 @@
                 if (match) sku = match[1];
             }
             return sku ? sku.slice(0, 60) : null;
+        }*/
+
+        function extractSku(card) {
+            // Check the card's own attributes first — these selectors are usually
+            // set directly on the SAME element the tile is built from, and
+            // querySelector() never matches the calling element itself, only its
+            // descendants. That mismatch was making every tile's sku come back null.
+            // Priority: a real, dedicated SKU wins when present; otherwise fall
+            // back to the generic product id (data-product-id / data-product) —
+            // covers today's Shopora catalog, which only has `id`, no separate sku.
+            var sku = card.getAttribute && (card.getAttribute('data-sku') || card.getAttribute('data-product-id') || card.getAttribute('data-product'));
+            if (!sku) {
+                var el = firstMatch(card, FIELD_SEL.sku);
+                if (el) {
+                    sku = el.getAttribute('data-sku') || el.getAttribute('data-product-id') || el.getAttribute('data-product');
+                    if (!sku && (el.tagName === 'A' || el.hasAttribute('href'))) {
+                        var href = el.getAttribute('href') || '';
+                        var match = href.match(/\/p\/(?:[^\/]+\/)*(\d+)/);
+                        if (match) sku = match[1];
+                    }
+                }
+            }
+            return sku ? sku.slice(0, 60) : null;
         }
+
+
 
         // Availability state — one of: in-stock, out-of-stock, low-stock, unknown.
         // out-of-stock: disabled add-to-cart button, or explicit .out-of-stock / .sold-out element.
         // low-stock: explicit class/attribute, or text pattern ("only N left", "low stock", "hurry").
         // unknown: no add-to-cart button found.
-        function extractAvailability(card) {
+        /*function extractAvailability(card) {
             if (card.querySelector('[data-availability="out-of-stock"], .out-of-stock, .sold-out')) return 'out-of-stock';
             var btn = firstMatch(card, FIELD_SEL.addToCart);
             if (!btn) return 'unknown';
             if (btn.disabled) return 'out-of-stock';
             if (card.querySelector('[data-availability="low-stock"], .low-stock, [data-stock="low"]')) return 'low-stock';
+            if (/only \d+ left|low stock|hurry/i.test(card.textContent)) return 'low-stock';
+            return 'in-stock';
+        }*/
+
+        function extractAvailability(card) {
+            if (card.querySelector('[data-availability="out-of-stock"], .out-of-stock, .sold-out')) return 'out-of-stock';
+            if (card.querySelector('[data-availability="low-stock"], .low-stock, [data-stock="low"]')) return 'low-stock';
+            var explicitAvail = card.querySelector('[data-availability]');
+            if (explicitAvail) return explicitAvail.getAttribute('data-availability');
+            var btn = firstMatch(card, FIELD_SEL.addToCart);
+            if (!btn) return 'unknown';
+            if (btn.disabled) return 'out-of-stock';
             if (/only \d+ left|low stock|hurry/i.test(card.textContent)) return 'low-stock';
             return 'in-stock';
         }
@@ -877,9 +926,24 @@
             }
             if (badges.length > 0) tile.badges = badges;
 
-            // 5. Discount Amount 
+            // 5. Discount Amount — parse into numeric value + currency
             var amtEl = firstMatch(card, FIELD_SEL.discountAmount);
-            if (amtEl) tile.discount_amount = textOf(amtEl, 20);
+            if (amtEl) {
+                var rawDiscount = textOf(amtEl, 20);
+                if (rawDiscount) {
+                    // Strip text like "Save", "Off", etc. and extract the number
+                    var discountNum = parseFloat(rawDiscount.replace(/[^0-9.-]+/g, ''));
+                    if (!isNaN(discountNum)) {
+                        tile.discount_amount = discountNum.toFixed(2);
+                        // Detect currency symbol
+                        if (rawDiscount.indexOf('£') !== -1) tile.discount_currency = 'GBP';
+                        else if (rawDiscount.indexOf('€') !== -1) tile.discount_currency = 'EUR';
+                        else if (rawDiscount.indexOf('₹') !== -1) tile.discount_currency = 'INR';
+                        else tile.discount_currency = 'USD'; // default
+                    }
+                }
+            }
+
 
             // 6. Availability flag text 
             var availEl = firstMatch(card, FIELD_SEL.availability);
@@ -1037,13 +1101,20 @@
             var discount = textOf(firstMatch(item, FIELD_SEL.cartItemDiscount), 20);
             if (discount) li.discount = discount;
 
-            var skuEl = item.querySelector('[data-item-id]') || firstMatch(item, FIELD_SEL.sku);
-            if (skuEl) {
-                li.sku = skuEl.getAttribute('data-item-id') || skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
-                if (!li.sku && (skuEl.tagName === 'A' || skuEl.hasAttribute('href'))) {
-                    var href = skuEl.getAttribute('href') || '';
-                    var match = href.match(/\/p\/(?:[^\/]+\/)*(\d+)/);
-                    if (match) li.sku = match[1];
+            // FIX: Check the root item element FIRST before searching children
+            var rootSku = item.getAttribute('data-cart-id') || item.getAttribute('data-item-id') || item.getAttribute('data-product-id') || item.getAttribute('data-sku');
+
+            if (rootSku) {
+                li.sku = rootSku;
+            } else {
+                var skuEl = item.querySelector('[data-item-id]') || firstMatch(item, FIELD_SEL.sku);
+                if (skuEl) {
+                    li.sku = skuEl.getAttribute('data-item-id') || skuEl.getAttribute('data-product-id') || skuEl.getAttribute('data-sku') || textOf(skuEl, 30);
+                    if (!li.sku && (skuEl.tagName === 'A' || skuEl.hasAttribute('href'))) {
+                        var href = skuEl.getAttribute('href') || '';
+                        var match = href.match(/\/p\/(?:[^\/]+\/)*(\d+)/);
+                        if (match) li.sku = match[1];
+                    }
                 }
             }
 
@@ -1368,7 +1439,7 @@
 
             // 4. Loyalty discount line
             var loyaltyEl = firstMatch(doc, FIELD_SEL.cartLoyalty);
-            if (loyaltyEl) result.loyalty_discount = textOf(loyaltyEl, 20);
+            if (loyaltyEl) result.loyalty_discount = textOf(loyaltyEl, 60);
 
             // 5. Tax line
             var taxEl = firstMatch(doc, FIELD_SEL.cartTax);
@@ -1389,7 +1460,7 @@
 
                 // 8. Parse Free Shipping Eligibility
                 var lowerMsg = msg.toLowerCase();
-                if (lowerMsg.includes('you have free') || lowerMsg.includes('eligible') || lowerMsg.includes('qualify')) {
+                if (lowerMsg.includes('you have free') || lowerMsg.includes('eligible') || lowerMsg.includes('qualify') || lowerMsg.includes('unlocked')) {
                     result.free_shipping_eligibility = 'eligible';
                 } else if (lowerMsg.includes('away from free') || lowerMsg.includes('add') || lowerMsg.includes('spend')) {
                     result.free_shipping_eligibility = 'not-eligible';
@@ -1873,7 +1944,7 @@
                 t5.welcome_banner = !!welcomeBanner; // Converts to boolean true/false
 
                 // 6. Active loyalty discount in cart (boolean)
-                var loyaltyDiscountEl = doc.querySelector('.cart-summary .loyalty-discount, .order-total .member-discount');
+                var loyaltyDiscountEl = doc.querySelector('.summary-card .loyalty-discount, .checkout-summary .loyalty-discount, .cart-summary .loyalty-discount, .order-total .member-discount');
                 t5.active_loyalty_discount = !!loyaltyDiscountEl;
 
                 return t5;
@@ -1882,9 +1953,187 @@
             }
         }
 
-        // ── 10.5  TIERS 5–9 — STUBS (Phase 2+) ───────────────────────
+        // ── 10.5  TIER 6 — Promotional context ───────────────────────
+        function uniqueList(arr) {
+            var seen = [];
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i] && seen.indexOf(arr[i]) === -1) seen.push(arr[i]);
+            }
+            return seen;
+        }
 
-        function extractTier6() { return null; } // Promotional context
+        function extractClaim(el) {
+            if (!el) return null;
+            var text = el.textContent || '';
+            var percentAttr = el.getAttribute('data-claim-percent');
+            var typeAttr = el.getAttribute('data-claim-type');
+            var scopeAttr = el.getAttribute('data-claim-scope');
+            var codeAttr = el.getAttribute('data-claim-code');
+            var minSpendAttr = el.getAttribute('data-claim-min-spend');
+            var percentMatch = text.match(/(\d{1,3})\s*%/);
+
+            var percent = percentAttr ? Number(percentAttr) : (percentMatch ? Number(percentMatch[1]) : null);
+            var scope = scopeAttr || null;
+
+            // Fallback scope inference: scan the module's own text for known
+            // category words when no explicit data-claim-scope is present.
+            if (!scope) {
+                var categoryWords = ['electronics', 'fashion', 'home', 'books'];
+                var lowerText = text.toLowerCase();
+                for (var i = 0; i < categoryWords.length; i++) {
+                    if (lowerText.indexOf(categoryWords[i]) !== -1) { scope = categoryWords[i]; break; }
+                }
+            }
+
+            if (percent == null && !scope) return null; // nothing claim-worthy here
+
+            var claim = { percent: percent, type: typeAttr || 'percentage', scope: scope };
+            if (codeAttr) claim.code = codeAttr;
+            if (minSpendAttr) claim.min_spend = Number(minSpendAttr);
+            return claim;
+        }
+
+        function extractDisclosure(el) {
+            if (!el) return null;
+            var text = el.textContent || '';
+            var hasAsterisk = /\*/.test(text);
+            var hasDagger = /†/.test(text);
+            var hasTermsApply = /terms apply|t&c|conditions apply/i.test(text);
+            if (!hasAsterisk && !hasDagger && !hasTermsApply) return null;
+            return { asterisk: hasAsterisk, dagger: hasDagger, terms_apply_text: hasTermsApply };
+        }
+
+        function buildModule(el, type, position) {
+            if (!el) return null;
+            var mod = {
+                module_id: el.id || el.getAttribute('data-module-id') || null,
+                module_type: el.getAttribute('data-module-type') || type,
+                position: position,
+                in_grid: !!el.closest('.product-grid, .catalog-grid, #dealStrip')
+            };
+
+            var claim = extractClaim(el);
+            if (claim) mod.claim = claim;
+
+            var disclosure = extractDisclosure(el);
+            if (disclosure) mod.disclosure = disclosure;
+
+            // CTA: the module itself if it's a link, else the first CTA inside it.
+            var ctaEl = (el.tagName === 'A') ? el : firstMatch(el, ['a.button', 'button', 'b', 'a']);
+            if (ctaEl) {
+                mod.cta_label = textOf(ctaEl, 40);
+                if (ctaEl.getAttribute && ctaEl.getAttribute('href')) mod.cta_href = ctaEl.getAttribute('href');
+            }
+
+            var sponsoredLabel = el.querySelector('.sponsored-label, .ad-label, [data-sponsored="true"]');
+            if (sponsoredLabel) mod.banner_label = 'sponsored';
+
+            var campaignRef = el.getAttribute('data-campaign') || el.getAttribute('data-claim-code');
+            if (campaignRef) mod.campaign_ref = campaignRef;
+
+            return mod;
+        }
+
+        function extractTier6(doc) {
+            try {
+                var result = {};
+
+                // 1. Header announcement bar items (each as its own string).
+                var announcementEls = doc.querySelectorAll(FIELD_SEL.announcementBar.join(', '));
+                if (announcementEls.length) {
+                    var announcementItems = [];
+                    for (var a = 0; a < announcementEls.length; a++) {
+                        var itemText = textOf(announcementEls[a], 60);
+                        if (itemText) announcementItems.push(itemText);
+                    }
+                    announcementItems = uniqueList(announcementItems);
+                    if (announcementItems.length) result.announcement_bar = announcementItems;
+                }
+
+                var modules = [];
+                var position = 1;
+
+                // 2. Hero module.
+                var heroEl = firstMatch(doc, FIELD_SEL.heroModule);
+                if (heroEl) {
+                    var heroMod = buildModule(heroEl, 'hero', position++);
+                    if (heroMod) {
+                        var headline = textOf(firstMatch(doc, FIELD_SEL.heroHeadline), 80);
+                        var subheading = textOf(firstMatch(doc, FIELD_SEL.heroSubheading), 120);
+                        var offerText = textOf(firstMatch(doc, FIELD_SEL.heroOfferText), 60);
+                        if (headline) heroMod.headline = headline;
+                        if (subheading) heroMod.subheading = subheading;
+                        if (offerText) heroMod.offer_text = offerText;
+                        var heroCta = firstMatch(doc, FIELD_SEL.heroCta);
+                        if (heroCta) {
+                            heroMod.cta_label = textOf(heroCta, 40);
+                            if (heroCta.getAttribute('href')) heroMod.cta_href = heroCta.getAttribute('href');
+                        }
+                        modules.push(heroMod);
+                    }
+                }
+
+                // 3. Promo banner modules (full-width banners between sections).
+                var promoBannerEls = doc.querySelectorAll(FIELD_SEL.promoBanner.join(', '));
+                for (var p = 0; p < promoBannerEls.length; p++) {
+                    var promoMod = buildModule(promoBannerEls[p], 'banner', position++);
+                    if (promoMod) {
+                        var promoHeading = textOf(promoBannerEls[p].querySelector('h2, h3'), 80);
+                        if (promoHeading) promoMod.headline = promoHeading;
+                        modules.push(promoMod);
+                    }
+                }
+
+                if (modules.length) result.modules = modules;
+
+                // 4. Countdown timer.
+                var countdownEl = firstMatch(doc, FIELD_SEL.countdown);
+                if (countdownEl) {
+                    result.countdown_present = true;
+                    var countdownValueEl = firstMatch(countdownEl, FIELD_SEL.countdownValue) || firstMatch(doc, FIELD_SEL.countdownValue);
+                    result.countdown_value = textOf(countdownValueEl, 20);
+                    result.countdown_context = textOf(countdownEl, 60);
+                    result.countdown_hard_deadline = countdownEl.hasAttribute('data-deadline-timestamp');
+                } else {
+                    result.countdown_present = false;
+                }
+
+                // 5. Advertised discount constructs — codes attached to any claim found above.
+                var advertisedCodes = [];
+                for (var m = 0; m < modules.length; m++) {
+                    if (modules[m].claim && modules[m].claim.code) advertisedCodes.push(modules[m].claim.code);
+                }
+                advertisedCodes = uniqueList(advertisedCodes);
+                if (advertisedCodes.length) result.advertised_discount_constructs = advertisedCodes;
+
+                // 6. Per-card urgency messaging + deal chips — progressive budget cutoff,
+                // since this is the first thing the doc says to drop if Tier 6 runs long.
+                var urgencyMsgs = [];
+                var dealChips = [];
+                var cards = doc.querySelectorAll('.product-card, .product-tile, article');
+                for (var k = 0; k < cards.length; k++) {
+                    if (JSON.stringify(result).length + JSON.stringify(urgencyMsgs).length + JSON.stringify(dealChips).length > 1800) break;
+
+                    var urgencyEl = firstMatch(cards[k], FIELD_SEL.scarcityMsg);
+                    var chipEl = firstMatch(cards[k], FIELD_SEL.dealChip);
+
+                    if (urgencyEl) { var uText = textOf(urgencyEl, 40); if (uText) urgencyMsgs.push(uText); }
+                    if (chipEl) { var cText = textOf(chipEl, 30); if (cText) dealChips.push(cText); }
+                }
+                urgencyMsgs = uniqueList(urgencyMsgs);
+                dealChips = uniqueList(dealChips);
+                if (urgencyMsgs.length) result.urgency_messages = urgencyMsgs;
+                if (dealChips.length) result.deal_chips = dealChips;
+
+                return Object.keys(result).length ? result : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+
+        // ── 10.5  TIERS 7–9 — STUBS (Phase 2+) ───────────────────────
+
         function extractTier7() { return null; } // Search context
         function extractTier8() { return null; } // Trust / social proof
         function extractTier9() { return null; } // Recommendation set detail
@@ -1938,7 +2187,7 @@
             var activeTiers = getActiveTiers(pageType);
             var has = function (n) { return activeTiers.indexOf(n) !== -1; };
 
-            var t1 = null, t2 = null, t3 = null, t4 = null, t5 = null;
+            var t1 = null, t2 = null, t3 = null, t4 = null, t5 = null, t6 = null;
 
             if (has(1) && !budget.isOver()) {
                 t1 = extractTier1(doc, pageType); //NEW pagetype
@@ -1967,13 +2216,18 @@
                 if (t5) budget.add(5, t5);
             }
 
-
+            if (has(6) && !budget.isOver()) {
+                t6 = extractTier6(doc);
+                if (t6) budget.add(6, t6);
+            }
             var signals = {};
             if (t1 !== null) signals.t1 = t1;
             if (t2 !== null) signals.t2 = t2;
             if (t3 !== null) signals.t3 = t3;
             if (t4 !== null) signals.t4 = t4;
             if (t5 !== null) signals.t5 = t5;
+            if (t6 !== null) signals.t6 = t6;
+
 
 
             var payload = Object.assign({
@@ -1982,7 +2236,7 @@
             }, t0, {
                 page: {
                     page_type: pageType,
-                    page_url: window.location.href,
+                    page_url: window.location.origin + (window.location.pathname.replace(/\/index\.html$/i, '') || '/') + window.location.search + window.location.hash,
                 },
                 signals: signals,
                 budget: budget.summary(),

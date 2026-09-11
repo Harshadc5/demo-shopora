@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Product Details | SHOPORA</title>
-  <link rel="stylesheet" href="https://shopora-xi-opal.vercel.app/styles.css?v=5" />
+  <link rel="stylesheet" href="./styles.css?v=21" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 
@@ -24,7 +24,7 @@
           <option value="books">Books</option>
         </select><input id="headerSearch" type="search" placeholder="Search for products, brands and more"
           aria-label="Search products" /><button type="submit" aria-label="Submit search">⌕</button></form>
-      <nav class="account-nav" aria-label="Account links"><a href="./account.html" data-identity-state="recognized" data-member-tier="gold" data-loyalty-balance="1500" data-customer-hash="abc123xyz"><span>Hello, Rahul</span><strong>Account</strong></a><a href="./orders.html"><span>Returns</span><strong>&
+      <nav class="account-nav" aria-label="Account links"><a href="./account.html" class="account-chip" data-identity-state="guest"><span class="greeting">Hello, guest</span><span class="account-label">Account</span></a><a href="./orders.html"><span>Returns</span><strong>&
             Orders</strong></a><a class="wishlist-link" href="./category.html"><span>♡</span><strong
             data-wishlist-count>0</strong></a><a class="cart-link" href="./cart.html"><span
             class="cart-glyph">🛒</span><strong data-cart-count>0</strong><b>Cart</b></a></nav>
@@ -76,11 +76,43 @@
     </div>
   </main>
 
+  
+  <section class="cart-recommendations" style="max-width: min(1400px, calc(100% - 2rem)); margin: 0 auto 2rem; padding: 40px; background: #fff; border-radius: 0 0 16px 16px; border-top: 1px dashed var(--line);">
+    <div class="section-heading">
+      <div><span class="section-kicker">YOU MAY ALSO LIKE</span>
+        <h2>Customers also bought</h2>
+      </div>
+    </div>
+    <div class="product-grid" id="recommendedGrid"></div>
+  </section>
+  <template id="productCardTemplate">
+    <article class="product-card">
+      <div class="product-image">
+        <div class="product-badge-row"><span class="discount-badge"></span><button
+            class="wishlist-button" type="button"
+            aria-label="Add to wishlist">?</button></div>
+      </div>
+      <div class="product-body">
+        <p class="product-brand"></p>
+        <h3></h3>
+        <div class="rating-line"><span class="stars"></span><span class="rating-count"></span>
+        </div>
+        <p class="product-meta"></p>
+        <div class="price-stack"><strong></strong><del></del><span></span></div>
+        <p class="delivery-note">FREE delivery <b>Tomorrow</b></p>
+        <div class="card-actions"><button class="button quick-view" type="button">Quick
+            view</button><button class="button button-primary add-to-cart"
+            type="button">Add to cart</button></div>
+      </div>
+    </article>
+  </template>
+
   <div id="toastRegion" class="toast-region" aria-live="polite"></div>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=24"></script>
+  <script type="module" src="./demo_router.js?v=27"></script>
   <!-- AIORA JS Tag — coordination failure signal collector -->
   <script src="tag.js" data-client-id="shopora-prod" data-endpoint="http://localhost:4001/api/collect"
-    data-sampling-rate="1.0" async></script>
+    data-sampling-rate="1.0" data-dom-settle-ms="1200" data-hydration-timeout="4000" async></script>
 
 </body>
 

@@ -8,11 +8,12 @@ const FREE_DELIVERY_MIN = 35;
 const DELIVERY_FEE = 5;
 
 // Promo Codes Registry
-// You can add new promo codes below here!
+// Sync'd with demo_config.json for AIORA Scenarios
 const PROMO_CODES = {
   'WELCOME10': { type: 'percent', value: 10 },
-  'AIORA20': { type: 'percent', value: 20 },
-  'FREESHIP': { type: 'freeship' }
+  'SAVE20': { type: 'percent', value: 20 },
+  'SAVE50': { type: 'flat', value: 50, min_order: 200 },
+  'MEMBER5': { type: 'percent', value: 5 }
 };
 
 const cart = loadCart();
@@ -45,7 +46,11 @@ function removePromo(page) {
 function calculatePromoDiscount(subtotal, delivery) {
   if (!activePromo || !PROMO_CODES[activePromo]) return 0;
   const promo = PROMO_CODES[activePromo];
+  // Enforce minimum order threshold if one exists
+  if (promo.min_order && subtotal < promo.min_order) return 0;
+  // Calculate the discount based on the type
   if (promo.type === 'percent') return (subtotal * promo.value) / 100;
+  if (promo.type === 'flat') return Math.min(promo.value, subtotal); // Don't discount below $0
   if (promo.type === 'freeship') return delivery;
   return 0;
 }
@@ -136,6 +141,10 @@ function buildProductCard(product, template) {
   const card = template.content.firstElementChild.cloneNode(true);
   applyVisual(card.querySelector('.product-image'), product);
   card.dataset.productId = product.id;
+  card.dataset.brand = product.name.split(' ')[0];
+  card.dataset.category = product.category;
+  card.dataset.sponsored = 'false';
+  card.dataset.availability = product.availability || 'in-stock';
   card.querySelector('.discount-badge').textContent = discount(product) + '% OFF';
   card.querySelector('.product-brand').textContent = product.name.split(' ')[0];
   card.querySelector('h3').textContent = product.name;
@@ -146,9 +155,13 @@ function buildProductCard(product, template) {
   card.querySelector('.price-stack del').textContent = money(retailOldPrice(product));
   card.querySelector('.price-stack span').textContent = 'Save ' + money(retailOldPrice(product) - retailPrice(product));
   const navigateToPDP = (e) => {
-    if (e.target.closest('.wishlist-button')) return;
+    if (e.target.closest('.wishlist-button, .add-to-cart, .quick-view')) return;
     e.preventDefault();
-    location.href = `./pdp.html?id=${product.id}`;
+    if (card.dataset.destination) {
+      window.location.href = card.dataset.destination;
+      return;
+    }
+    navWithParams(`./pdp.html?id=${product.id}`);
   };
   const img = card.querySelector('.product-image');
   img.addEventListener('click', navigateToPDP);
@@ -184,7 +197,7 @@ function createDealCard(product) {
   card.innerHTML = `<div class="product-image" style="cursor:pointer"><span class="discount-badge">${discount(product)}% OFF</span></div><div class="deal-info"><span class="deal-chip">${product.badge}</span><h3 style="cursor:pointer">${product.name}</h3><div class="deal-price"><strong>${money(retailPrice(product))}</strong><del>${money(retailOldPrice(product))}</del></div><button class="button button-primary">Add to cart</button></div>`;
   applyVisual(card.querySelector('.product-image'), product);
   card.querySelector('button').addEventListener('click', () => addToCart(product.id));
-  const navigateToPDP = (e) => { e.preventDefault(); location.href = `./pdp.html?id=${product.id}`; };
+  const navigateToPDP = (e) => { e.preventDefault(); navWithParams(`./pdp.html?id=${product.id}`); };
   card.querySelector('.product-image').addEventListener('click', navigateToPDP);
   card.querySelector('h3').addEventListener('click', navigateToPDP);
   return card;
@@ -201,15 +214,34 @@ function renderHome() {
   const categoryGrid = document.querySelector('#categoryGrid');
   categoryGrid.innerHTML = categories.map((category) => `<a class="category-card ${category.key}" href="./category.html?category=${category.key}"><span>15 PRODUCTS</span><strong>${category.label}</strong><p>${category.description}</p></a>`).join('');
   const dealStrip = document.querySelector('#dealStrip');
-  products.filter((product) => product.deal).slice(0, 8).forEach((product) => dealStrip.appendChild(createDealCard(product)));
+  products.filter((product) => product.deal).slice(0, 4).forEach((product) => dealStrip.appendChild(createDealCard(product)));
   const featuredGrid = document.querySelector('#featuredGrid');
-  [products[1], products[2], products[16], products[17], products[30], products[33], products[45], products[54]].forEach((product) => featuredGrid.appendChild(buildProductCard(product, template)));
+  [products[1], products[2], products[16], products[17], products[30], products[33], products[35], products[38]].forEach((product) => featuredGrid.appendChild(buildProductCard(product, template)));
   startDealTimer();
 }
 function startDealTimer() {
-  const node = document.querySelector('#dealTimer'); if (!node) return;
+  const container = document.querySelector('.countdown');
+  const node = document.querySelector('.countdown-value') || document.querySelector('#dealTimer');
+  if (!node) return;
   let seconds = 9 * 3600 + 42 * 60 + 18;
-  window.setInterval(() => { seconds = Math.max(0, seconds - 1); const h = String(Math.floor(seconds / 3600)).padStart(2, '0'); const m = String(Math.floor(seconds % 3600 / 60)).padStart(2, '0'); const s = String(seconds % 60).padStart(2, '0'); node.textContent = h + ':' + m + ':' + s; }, 1000);
+  const match = node.textContent.trim().match(/^(\d+):(\d+):(\d+)$/);
+  if (match) {
+    seconds = parseInt(match[1], 10) * 3600 + parseInt(match[2], 10) * 60 + parseInt(match[3], 10);
+  }
+  if (container && container.dataset.deadlineTimestamp) {
+    const deadline = new Date(container.dataset.deadlineTimestamp).getTime();
+    if (!isNaN(deadline) && deadline > Date.now()) {
+      seconds = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+    }
+  }
+  const tick = () => {
+    seconds = Math.max(0, seconds - 1);
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    node.textContent = h + ':' + m + ':' + s;
+  };
+  window.setInterval(tick, 1000);
 }
 function renderCatalog() {
   const template = document.querySelector('#productCardTemplate');
@@ -304,8 +336,9 @@ function renderCart() {
   document.querySelector('#summaryItems').textContent = String(cartCount());
   document.querySelector('#summarySubtotal').textContent = money(subtotal);
   document.querySelector('#summaryDelivery').textContent = delivery ? money(delivery) : 'FREE';
-  document.querySelector('#summarySavings').textContent = money(savings);
-  
+  const totalSavings = savings + promoDiscount;
+  document.querySelector('#summarySavings').textContent = money(totalSavings);
+
   const promoRow = document.querySelector('#promoRow');
   if (promoRow) {
     if (activePromo && promoDiscount > 0) {
@@ -322,9 +355,31 @@ function renderCart() {
     }
   }
 
-  document.querySelector('#summaryTotal').textContent = money(finalTotal);
+  // Shopora Plus 5% member discount row in cart summary
+  var _cartP = new URLSearchParams(window.location.search);
+  var _cartPlus = _cartP.get('identity') === 'logged-in' && _cartP.get('member_tier') === 'plus';
+  var _cartPlusRow = document.querySelector('#plusMemberRow');
+  if (_cartPlus) {
+    var _cartPlusDisc = subtotal * 0.05;
+    var _cartAdjTotal = finalTotal - _cartPlusDisc;
+    document.querySelector('#summaryTotal').textContent = money(_cartAdjTotal);
+    if (!_cartPlusRow) {
+      _cartPlusRow = document.createElement('div');
+      _cartPlusRow.id = 'plusMemberRow';
+      _cartPlusRow.className = 'summary-row savings';
+      _cartPlusRow.innerHTML = '<span>Shopora Plus member <strong style="font-size:0.72rem;background:#f5c518;color:#000;padding:1px 5px;border-radius:50px;">5% off</strong></span><strong id="plusMemberAmt"></strong>';
+      var _cartTotalRow = document.querySelector('#summaryTotal') && document.querySelector('#summaryTotal').closest('.summary-row');
+      if (_cartTotalRow) _cartTotalRow.before(_cartPlusRow);
+    }
+    var _pAmt = document.querySelector('#plusMemberAmt');
+    if (_pAmt) _pAmt.textContent = '-' + money(_cartPlusDisc);
+    _cartPlusRow.style.display = 'flex';
+  } else {
+    if (_cartPlusRow) _cartPlusRow.style.display = 'none';
+    document.querySelector('#summaryTotal').textContent = money(finalTotal);
+  }
   document.querySelector('#cartItemLabel').textContent = cartCount() + (cartCount() === 1 ? ' item' : ' items');
-  
+
   const btn = document.querySelector('#applyPromoBtn');
   if (btn && !btn.hasAttribute('data-bound')) {
     btn.setAttribute('data-bound', 'true');
@@ -335,17 +390,32 @@ function renderCart() {
     });
   }
   const checkoutButton = document.querySelector('#checkoutButton');
+  if (checkoutButton) {
+    // Bake URL params directly into href at render time - most reliable approach
+    var _cp = new URLSearchParams(window.location.search);
+    var _cu = new URL('./checkout.html', window.location.origin);
+    if (_cp.has('identity')) _cu.searchParams.set('identity', _cp.get('identity'));
+    if (_cp.has('member_tier')) _cu.searchParams.set('member_tier', _cp.get('member_tier'));
+    checkoutButton.href = _cu.toString();
+  }
   checkoutButton.classList.toggle('disabled', !items.length);
   checkoutButton.setAttribute('aria-disabled', String(!items.length));
   const progress = document.querySelector('#shippingProgress');
   const remaining = Math.max(0, FREE_DELIVERY_MIN - subtotal);
   progress.innerHTML = subtotal >= FREE_DELIVERY_MIN ? '<p><strong>✓ You unlocked FREE delivery!</strong></p><div class="progress-track"><i style="width:100%"></i></div>' : `<p>Add <strong>${money(remaining)}</strong> more for FREE delivery</p><div class="progress-track"><i style="width:${Math.min(100, subtotal / FREE_DELIVERY_MIN * 100)}%"></i></div>`;
-  if (!items.length) { container.innerHTML = '<div class="cart-empty"><span>🛒</span><h2>Your cart is empty</h2><p>Looks like you have not added anything yet.</p><a class="button button-accent" href="./category.html">Start shopping</a></div>'; return; }
-  container.innerHTML = items.map((item) => `<article class="cart-item" data-cart-id="${item.id}"><div class="product-image" style="cursor:pointer"></div><div><span class="section-kicker">${item.badge}</span><h3 style="cursor:pointer">${item.name}</h3><p class="cart-item-meta">${item.description}</p><p class="cart-item-meta"><b>In stock</b> · FREE returns</p><div class="cart-item-actions"><div class="quantity-control"><button data-dec aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button data-inc aria-label="Increase quantity">+</button></div><button class="text-button" data-save>Save for later</button><button class="text-button" data-remove>Remove</button></div></div><div class="cart-item-price"><strong class="cart-item-total">${money(retailPrice(item) * item.quantity)}</strong><del>${money(retailOldPrice(item) * item.quantity)}</del><small>${discount(item)}% off</small></div></article>`).join('');
+  if (!items.length) {
+    container.innerHTML = '<div class="cart-empty"><span>🛒</span><h2>Your cart is empty</h2><p>Looks like you have not added anything yet.</p><a id="emptyCartShopBtn" class="button button-accent" href="./category.html">Start shopping</a></div>';
+    setTimeout(() => {
+      const btn = document.querySelector('#emptyCartShopBtn');
+      if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); navWithParams('./category.html'); });
+    }, 0);
+    return;
+  }
+  container.innerHTML = items.map((item) => `<article class="cart-item" data-cart-id="${item.id}" data-item-id="${item.id}" data-sku="${item.id}"><div class="product-image" style="cursor:pointer"></div><div><span class="section-kicker">${item.badge}</span><h3 style="cursor:pointer">${item.name}</h3><p class="cart-item-meta">${item.description}</p><p class="cart-item-meta"><b>In stock</b> · FREE returns</p><div class="cart-item-actions"><div class="quantity-control"><button data-dec aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button data-inc aria-label="Increase quantity">+</button></div><button class="text-button" data-save>Save for later</button><button class="text-button" data-remove>Remove</button></div></div><div class="cart-item-price"><strong class="cart-item-total">${money(retailPrice(item) * item.quantity)}</strong><del>${money(retailOldPrice(item) * item.quantity)}</del><small>${discount(item)}% off</small></div></article>`).join('');
   items.forEach((item) => {
     const row = container.querySelector('[data-cart-id="' + item.id + '"]');
     applyVisual(row.querySelector('.product-image'), item);
-    const navPDP = (e) => { e.preventDefault(); location.href = `./pdp.html?id=${item.id}`; };
+    const navPDP = (e) => { e.preventDefault(); navWithParams(`./pdp.html?id=${item.id}`); };
     row.querySelector('.product-image').addEventListener('click', navPDP);
     row.querySelector('h3').addEventListener('click', navPDP);
     row.querySelector('[data-dec]').addEventListener('click', () => updateQuantity(item.id, item.quantity - 1));
@@ -366,7 +436,7 @@ function renderCheckout() {
     const finalTotal = subtotal + delivery - promoDiscount;
     document.querySelector('#checkoutSubtotal').textContent = money(subtotal);
     document.querySelector('#checkoutDelivery').textContent = delivery ? money(delivery) : 'FREE';
-    
+
     const promoRow = document.querySelector('#checkoutPromoRow');
     if (promoRow) {
       if (activePromo && promoDiscount > 0) {
@@ -383,8 +453,29 @@ function renderCheckout() {
       }
     }
 
-    document.querySelector('#checkoutTotal').textContent = money(finalTotal);
-    
+    // Shopora Plus 5% member discount row
+    const _coParams = new URLSearchParams(window.location.search);
+    const _coIsPlus = _coParams.get('identity') === 'logged-in' && _coParams.get('member_tier') === 'plus';
+    let _coPlusRow = document.querySelector('#coPlusMemberRow');
+    if (_coIsPlus) {
+      const _coDiscount = subtotal * 0.05;
+      const _coAdjustedTotal = finalTotal - _coDiscount;
+      document.querySelector('#checkoutTotal').textContent = money(_coAdjustedTotal);
+      if (!_coPlusRow) {
+        _coPlusRow = document.createElement('div');
+        _coPlusRow.id = 'coPlusMemberRow';
+        _coPlusRow.className = 'summary-row savings';
+        _coPlusRow.innerHTML = '<span>Shopora Plus member <strong style="font-size:0.72rem;background:#f5c518;color:#000;padding:1px 5px;border-radius:50px;">5% off</strong></span><strong id="coPlusMemberAmt"></strong>';
+        const _coTotalRow = document.querySelector('#checkoutTotal')?.closest('.summary-row.total');
+        if (_coTotalRow) _coTotalRow.before(_coPlusRow);
+      }
+      document.querySelector('#coPlusMemberAmt').textContent = '-' + money(subtotal * 0.05);
+      _coPlusRow.style.display = 'flex';
+    } else {
+      if (_coPlusRow) _coPlusRow.style.display = 'none';
+      document.querySelector('#checkoutTotal').textContent = money(finalTotal);
+    }
+
     const btn = document.querySelector('#applyCheckoutPromoBtn');
     if (btn && !btn.hasAttribute('data-bound')) {
       btn.setAttribute('data-bound', 'true');
@@ -400,7 +491,7 @@ function renderCheckout() {
       const row = container.querySelector('[data-mini-id="' + item.id + '"]');
       applyVisual(row.querySelector('.product-image'), item);
 
-      const navPDP = (e) => { e.preventDefault(); location.href = `./pdp.html?id=${item.id}`; };
+      const navPDP = (e) => { e.preventDefault(); navWithParams(`./pdp.html?id=${item.id}`); };
       row.querySelector('.product-image').addEventListener('click', navPDP);
       row.querySelector('p').addEventListener('click', navPDP);
     });
@@ -411,7 +502,7 @@ function renderCheckout() {
     const items = cartItems();
     if (!items.length) { toast('Your cart is empty.'); return; }
     const orderId = 'SP' + Date.now().toString().slice(-8);
-    
+
     // Save order
     const pastOrders = JSON.parse(localStorage.getItem('shopora-orders') || '[]');
     let total = 0;
@@ -419,12 +510,12 @@ function renderCheckout() {
       total += retailPrice(item) * item.quantity;
       return { id: item.id, name: item.name, qty: item.quantity, price: retailPrice(item), category: item.category };
     });
-    
+
     let appliedPromo = JSON.parse(localStorage.getItem('shopora-promo'));
     if (appliedPromo && appliedPromo.discount > 0) {
       total = Math.max(0, total - appliedPromo.discount);
     }
-    
+
     pastOrders.unshift({
       id: orderId,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -446,7 +537,8 @@ function renderCheckout() {
 }
 function renderPDP() {
   const params = new URLSearchParams(location.search);
-  const productId = params.get('id') || 'el-1';
+  // Support both ?sku= (spec requirement) and ?id= (internal links)
+  const productId = params.get('sku') || params.get('id') || 'el-1';
   const product = products.find(p => p.id === productId) || products[0];
 
   const main = document.querySelector('#mainContent');
@@ -456,7 +548,7 @@ function renderPDP() {
   document.title = `${product.name} | SHOPORA`;
 
   // Reset inline styles on main to have full control of the layout
-  main.style.cssText = 'display: block; padding: 40px max(20px, calc((100vw - 1400px) / 2)); max-width: none; background: #fff;';
+  main.style.cssText = 'display: block; padding: 40px; max-width: min(1400px, calc(100% - 2rem)); margin: 2rem auto 0; background: #fff; border-radius: 16px 16px 0 0;';
 
   let specLabels = ['Feature 1', 'Feature 2', 'Feature 3', 'Feature 4'];
   let variantLabel = 'Style';
@@ -494,7 +586,7 @@ function renderPDP() {
       }
       .pdp-main-image { transition: all 0.2s ease; }
     </style>
-    <div id="hero" data-sku="${product.id}" data-mfr-no="SHOP-${product.id}" data-availability="in-stock" style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1.3fr 1fr; gap: 80px; padding-bottom: 60px;">
+    <div id="hero" data-product-id="${product.id}" data-sku="${product.id}" data-mfr-no="SHOP-${product.id}" data-availability="${product.availability || 'in-stock'}" data-brand="${brandName}" data-category="${product.category}" data-sponsored="false" style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1.3fr 1fr; gap: 80px; padding-bottom: 60px;">
       
       <!-- Left: Image Gallery (Sticky) -->
       <div style="position: sticky; top: 100px; height: max-content; display: flex; gap: 24px; align-items: flex-start;">
@@ -534,7 +626,7 @@ function renderPDP() {
           <div class="scarcity-msg" style="display: flex; align-items: center; gap: 6px; background: #fff0f0; border: 1px solid #ffdcdc; color: #d02e2e; padding: 2px 8px; border-radius: 50px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
             <span style="font-size: 0.9rem;">&bull;</span> High Demand
           </div>
-          <div class="product-brand" style="color: var(--blue); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;">${brandName} Official</div>
+          <a href="./category.html?brand=${encodeURIComponent(brandName.toLowerCase())}" class="product-brand" style="color: var(--blue); font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; text-decoration: none;">${brandName} Official</a>
         </div>
         
         <h1 class="product-title" style="font-size: clamp(1.4rem, 2.5vw, 2rem); font-weight: 800; color: var(--navy); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 6px;">${product.name}</h1>
@@ -756,7 +848,7 @@ function renderPDP() {
   const thumbnails = main.querySelectorAll('.pdp-thumb');
   const mainImageContainer = main.querySelector('.pdp-main-image');
   const mainProductImage = main.querySelector('.custom-product-image');
-  
+
   if (thumbnails.length > 0 && mainImageContainer) {
     thumbnails.forEach(thumb => {
       thumb.addEventListener('mouseenter', () => { if (thumb.style.borderColor !== 'var(--blue)') thumb.style.opacity = '1'; });
@@ -769,12 +861,12 @@ function renderPDP() {
         // Quick visual pop to simulate image changing
         mainImageContainer.style.opacity = '0.7';
         mainImageContainer.style.transform = 'scale(0.98)';
-        
+
         // Update main image transform
         const targetImage = document.getElementById('hero-main-image');
         const transVal = thumb.getAttribute('data-transform');
         if (targetImage && transVal) {
-           targetImage.style.transform = transVal;
+          targetImage.style.transform = transVal;
         }
 
         setTimeout(() => {
@@ -793,29 +885,167 @@ function initSearch() {
     const val = params.get('category');
     if (Array.from(category.options).some(o => o.value === val)) category.value = val;
   }
-  form.addEventListener('submit', (event) => { event.preventDefault(); const target = new URL('./category.html', location.href); if (input.value.trim()) target.searchParams.set('q', input.value.trim()); if (category?.value && category.value !== 'all') target.searchParams.set('category', category.value); location.href = target.toString(); });
-}
-function initGlobalInteractions() {
-  document.querySelectorAll('[data-toast]').forEach((node) => node.addEventListener('click', (event) => { event.preventDefault(); toast(node.dataset.toast); }));
-  const productForm = document.querySelector('#productFilterForm');
-if (productForm) {
-  productForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const val = document.querySelector('#searchInput').value.trim();
-    if (val) location.href = `./category.html?q=${encodeURIComponent(val)}`;
-    else location.href = './category.html';
+  form.addEventListener('submit', (event) => {
+    event.preventDefault(); const target = new URL('./category.html', location.href); if (input.value.trim()) target.searchParams.set('q', input.value.trim()); if (category?.value && category.value !== 'all') target.searchParams.set('category', category.value); // Preserve demo state in search navigation
+    const demoParams = new URLSearchParams(window.location.search);
+    if (demoParams.has('identity')) target.searchParams.set('identity', demoParams.get('identity'));
+    if (demoParams.has('member_tier')) target.searchParams.set('member_tier', demoParams.get('member_tier'));
+    location.href = target.toString();
   });
 }
 
-// Update wishlist links dynamically to include the filter parameter
-document.querySelectorAll('.wishlist-link').forEach(link => {
-  link.href = './category.html?wishlist=true';
-});
+function initIdentity() {
+  const params = new URLSearchParams(location.search);
+  const chip = document.querySelector('.account-chip');
+  if (chip) {
+    if (params.get('identity') === 'logged-in') {
+      chip.dataset.identityState = 'recognized';
+      chip.dataset.memberTier = 'plus';
+      chip.dataset.customerHash = 'demo-customer-hash-abc123';
+      chip.innerHTML = '<span class="greeting">Hello, Rahul</span><strong class="account-label">Shopora Plus</strong>';
+    }
 
-const newsletter = document.querySelector('#newsletterForm'); 
-newsletter?.addEventListener('submit', (event) => { event.preventDefault(); toast('You are on the list. Watch your inbox for deals!', 'success'); newsletter.reset(); });
+    // Demo helper: Clicking the chip toggles the login state
+    chip.addEventListener('click', (e) => {
+      e.preventDefault();
+      const currentUrl = new URL(window.location);
+      if (params.get('identity') === 'logged-in') {
+        // Going to guest: remove BOTH identity AND member_tier
+        currentUrl.searchParams.delete('identity');
+        currentUrl.searchParams.delete('member_tier');
+      } else {
+        currentUrl.searchParams.set('identity', 'logged-in');
+      }
+      window.location.href = currentUrl.toString();
+    });
+  }
+}
 
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const modal = document.querySelector('#quickViewModal'); if (modal && !modal.hidden) { modal.hidden = true; document.body.classList.remove('modal-open'); } } });
+function initLoyaltyChip() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('identity') === 'logged-in' && params.get('member_tier') === 'plus') {
+    const chipHtml = `
+      <div class="loyalty-chip" data-loyalty-tier="plus" data-loyalty-balance="450">
+        <span class="tier-label">Shopora Plus</span>
+        <span class="points">450 points</span>
+        <span class="tier-threshold">50 from Gold</span>
+      </div>
+    `;
+
+    // Inject into header (prepend to account-nav)
+    const accountNav = document.querySelector('.account-nav');
+    if (accountNav) {
+      accountNav.insertAdjacentHTML('afterbegin', chipHtml);
+    }
+
+    // Inject into cart/checkout summaries
+    const summaryCard = document.querySelector('.summary-card');
+    const checkoutSummary = document.querySelector('.checkout-summary');
+
+    if (checkoutSummary) {
+      checkoutSummary.insertAdjacentHTML('afterbegin', '<div style="margin-bottom: 1rem; text-align: center;">' + chipHtml + '</div>');
+    } else if (summaryCard) {
+      summaryCard.insertAdjacentHTML('afterbegin', '<div style="margin-bottom: 1rem; text-align: center;">' + chipHtml + '</div>');
+    }
+  }
+}
+
+// Helper: navigate to a URL while preserving demo state params
+function navWithParams(url) {
+  const current = new URLSearchParams(window.location.search);
+  const target = new URL(url, window.location.origin);
+  if (current.has('identity')) target.searchParams.set('identity', current.get('identity'));
+  if (current.has('member_tier')) target.searchParams.set('member_tier', current.get('member_tier'));
+  location.href = target.toString();
+}
+function initGlobalInteractions() {
+  // Persist demo state parameters across all internal links
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link || !link.href || link.href.startsWith('javascript:')) return;
+
+    // Only intercept internal links to preserve demo state
+    try {
+      const linkUrl = new URL(link.href, window.location.origin);
+      if (linkUrl.origin === window.location.origin && !link.classList.contains('account-chip')) {
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.has('identity') || currentParams.has('member_tier')) {
+          e.preventDefault();
+          navWithParams(link.href);
+        }
+      }
+    } catch (err) {
+      // ignore invalid URLs
+    }
+  });
+
+  initLoyaltyChip();
+  initIdentity();
+  document.querySelectorAll('[data-toast]').forEach((node) => node.addEventListener('click', (event) => { event.preventDefault(); toast(node.dataset.toast); }));
+  const productForm = document.querySelector('#productFilterForm');
+  if (productForm) {
+    productForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.querySelector('#searchInput').value.trim();
+      if (val) location.href = `./category.html?q=${encodeURIComponent(val)}`;
+      else location.href = './category.html';
+    });
+  }
+
+  // Update wishlist links dynamically to include the filter parameter
+  document.querySelectorAll('.wishlist-link').forEach(link => {
+    link.href = './category.html?wishlist=true';
+  });
+
+  const newsletter = document.querySelector('#newsletterForm');
+  newsletter?.addEventListener('submit', (event) => { event.preventDefault(); toast('You are on the list. Watch your inbox for deals!', 'success'); newsletter.reset(); });
+
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { const modal = document.querySelector('#quickViewModal'); if (modal && !modal.hidden) { modal.hidden = true; document.body.classList.remove('modal-open'); } } });
+
+  initZipStateAutofill();
+}
+
+// US ZIP codes are assigned in contiguous ranges by their first 3 digits
+// (ZIP3), one or more ranges per state — this is the standard approach for
+// ZIP -> state lookup without a full per-ZIP database.
+const ZIP3_STATE_RANGES = [
+  [10, 27, 'Massachusetts'], [28, 29, 'Rhode Island'], [30, 38, 'New Hampshire'],
+  [39, 49, 'Maine'], [50, 59, 'Vermont'], [60, 69, 'Connecticut'],
+  [70, 89, 'New Jersey'], [100, 149, 'New York'], [150, 196, 'Pennsylvania'],
+  [197, 199, 'Delaware'], [200, 205, 'District of Columbia'], [206, 219, 'Maryland'],
+  [220, 246, 'Virginia'], [247, 268, 'West Virginia'], [270, 289, 'North Carolina'],
+  [290, 299, 'South Carolina'], [300, 319, 'Georgia'], [398, 399, 'Georgia'],
+  [320, 349, 'Florida'], [350, 369, 'Alabama'], [370, 385, 'Tennessee'],
+  [386, 397, 'Mississippi'], [400, 427, 'Kentucky'], [430, 459, 'Ohio'],
+  [460, 479, 'Indiana'], [480, 499, 'Michigan'], [500, 528, 'Iowa'],
+  [530, 549, 'Wisconsin'], [550, 567, 'Minnesota'], [570, 577, 'South Dakota'],
+  [580, 588, 'North Dakota'], [590, 599, 'Montana'], [600, 629, 'Illinois'],
+  [630, 658, 'Missouri'], [660, 679, 'Kansas'], [680, 693, 'Nebraska'],
+  [700, 714, 'Louisiana'], [716, 729, 'Louisiana'], [730, 749, 'Oklahoma'],
+  [750, 799, 'Texas'], [885, 885, 'Texas'], [800, 816, 'Colorado'],
+  [820, 831, 'Wyoming'], [832, 838, 'Idaho'], [840, 847, 'Utah'],
+  [850, 865, 'Arizona'], [870, 884, 'New Mexico'], [889, 898, 'Nevada'],
+  [900, 961, 'California'], [967, 968, 'Hawaii'], [970, 979, 'Oregon'],
+  [980, 994, 'Washington'], [995, 999, 'Alaska']
+];
+function stateForZip(zip) {
+  const zip3 = parseInt(zip.slice(0, 3), 10);
+  if (isNaN(zip3)) return null;
+  const match = ZIP3_STATE_RANGES.find(([min, max]) => zip3 >= min && zip3 <= max);
+  return match ? match[2] : null;
+}
+function initZipStateAutofill() {
+  const postalInput = document.querySelector('#checkoutPostal');
+  const stateSelect = document.querySelector('#checkoutState');
+  if (!postalInput || !stateSelect) return;
+  postalInput.addEventListener('input', () => {
+    const zip = postalInput.value.trim();
+    if (!/^\d{5}$/.test(zip)) return;
+    const state = stateForZip(zip);
+    if (state && [...stateSelect.options].some((opt) => opt.value === state)) {
+      stateSelect.value = state;
+    }
+  });
 }
 function initOrders() {
   const container = document.querySelector('#ordersContainer');
@@ -884,14 +1114,14 @@ function initOrders() {
         // Need to query dynamically since same item could be in multiple orders
         const itemEls = container.querySelectorAll(`[data-item-id="${item.id}"]`);
         itemEls.forEach(el => {
-           const img = el.querySelector('.product-image');
-           if (!img.hasAttribute('data-sprite-applied')) {
-             img.setAttribute('data-sprite-applied', 'true');
-             applyVisual(img, { id: item.id, category: item.category });
-             const navPDP = (e) => { e.preventDefault(); location.href = `./pdp.html?id=${item.id}`; };
-             img.addEventListener('click', navPDP);
-             el.querySelector('h4').addEventListener('click', navPDP);
-           }
+          const img = el.querySelector('.product-image');
+          if (!img.hasAttribute('data-sprite-applied')) {
+            img.setAttribute('data-sprite-applied', 'true');
+            applyVisual(img, { id: item.id, category: item.category });
+            const navPDP = (e) => { e.preventDefault(); navWithParams(`./pdp.html?id=${item.id}`); };
+            img.addEventListener('click', navPDP);
+            el.querySelector('h4').addEventListener('click', navPDP);
+          }
         });
       });
     });
@@ -923,6 +1153,6 @@ if (currentPage === 'index.html' || currentPage === '') renderHome();
 if (currentPage === 'category.html') renderCatalog();
 if (currentPage === 'cart.html') { renderCart(); renderRecommendations(); }
 if (currentPage === 'checkout.html') renderCheckout();
-if (currentPage === 'pdp.html') renderPDP();
+if (currentPage === 'pdp.html') { renderPDP(); renderRecommendations(); }
 if (currentPage === 'orders.html') initOrders();
 window.addEventListener('storage', () => { Object.keys(cart).forEach((key) => delete cart[key]); Object.assign(cart, loadCart()); wishlist.clear(); loadJSON(WISHLIST_KEY, []).forEach((id) => wishlist.add(id)); updateHeaderCounts(); if (currentPage === 'cart.html') renderCart(); });

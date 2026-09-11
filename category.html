@@ -11,7 +11,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
                 rel="stylesheet">
-        <link rel="stylesheet" href="https://shopora-xi-opal.vercel.app/styles.css?v=5">
+        <link rel="stylesheet" href="./styles.css?v=21">
         <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 
@@ -33,7 +33,7 @@
                                         placeholder="Search for products, brands and more"
                                         aria-label="Search products"><button aria-label="Submit search">⌕</button>
                         </form>
-                        <nav class="account-nav"><a href="./orders.html"><span>Returns</span><strong>&
+                        <nav class="account-nav"><a href="./account.html" class="account-chip" data-identity-state="guest"><span class="greeting">Hello, guest</span><span class="account-label">Account</span></a><a href="./orders.html"><span>Returns</span><strong>&
                                                 Orders</strong></a><a
                                         href="./category.html"><span>Your</span><strong>Wishlist <b
                                                         data-wishlist-count>0</b></strong></a><a class="cart-link"
@@ -65,8 +65,8 @@
                                 <div class="filter-group"><span>Department</span>
                                         <div class="category-filter-list" id="categoryFilters"></div>
                                 </div><label class="filter-group"><span>Maximum price</span><input id="priceRange"
-                                                type="range" min="10" max="1000" step="10" value="1000"><output
-                                                id="priceOutput">Up to $1,000</output></label>
+                                                type="range" min="10" max="5000" step="10" value="5000"><output
+                                                id="priceOutput">Up to $5,000</output></label>
                                 <div class="filter-group"><span>Customer rating</span><label class="radio-row"><input
                                                         type="radio" name="rating" value="0" checked> All
                                                 ratings</label><label class="radio-row"><input type="radio"
@@ -116,7 +116,8 @@
         </template>
         <div id="toastRegion" class="toast-region" aria-live="polite"></div>
         <div id="quickViewModal" class="modal" hidden></div>
-        <script type="module" src="./app.js"></script>
+        <script type="module" src="./app.js?v=24"></script>
+        <script type="module" src="./demo_router.js?v=27"></script>
         <!-- AIORA JS Tag — coordination failure signal collector -->
         <script src="tag.js" data-client-id="shopora-prod" data-endpoint="http://localhost:4001/api/collect"
                 data-sampling-rate="1.0" async></script>

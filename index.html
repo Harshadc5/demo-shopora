@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://shopora-xi-opal.vercel.app/styles.css?v=5" />
+  <link rel="stylesheet" href="./styles.css?v=21" />
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 
@@ -31,7 +31,9 @@
           <option value="books">Books</option>
         </select><input id="headerSearch" type="search" placeholder="Search for products, brands and more"
           aria-label="Search products" /><button type="submit" aria-label="Submit search">⌕</button></form>
-      <nav class="account-nav" aria-label="Account links"><a href="./account.html" data-identity-state="recognized" data-member-tier="gold" data-loyalty-balance="1500" data-customer-hash="abc123xyz"><span>Hello, Rahul</span><strong>Account</strong></a><a href="./orders.html"><span>Returns</span><strong>&
+      <nav class="account-nav" aria-label="Account links"><a href="./account.html" class="account-chip"
+          data-identity-state="guest"><span class="greeting">Hello, guest</span><strong
+            class="account-label">Account</strong></a><a href="./orders.html"><span>Returns</span><strong>&
             Orders</strong></a><a class="wishlist-link" href="./category.html"><span>♡</span><strong
             data-wishlist-count>0</strong></a><a class="cart-link" href="./cart.html"><span
             class="cart-glyph">🛒</span><strong data-cart-count>0</strong><b>Cart</b></a></nav>
@@ -43,11 +45,14 @@
         href="#services">Customer Service</a><span class="rail-offer">Shopora Plus: extra 5% off</span></div>
   </header>
   <main id="mainContent">
-    <section class="hero">
+    <section class="hero" data-claim-type="percentage" data-claim-percent="35" data-claim-code="SUMMER35"
+      data-claim-min-spend="50">
       <div class="hero-copy"><span class="hero-offer">BIG SAVING DAYS</span>
         <h1>Upgrade your everyday for less.</h1>
         <p>Top-rated tech, style and home finds. Great prices, dependable delivery and easy returns—all in one place.
         </p>
+        <p class="hero-promo-code" style="font-size:0.85rem;color:var(--muted);margin:-0.5rem 0 1rem;">Use code
+          <strong>SUMMER35</strong> for 35% off orders over $50</p>
         <div class="hero-actions"><a class="button button-accent" href="./category.html">Shop all deals</a><a
             class="button button-ghost" href="#best-deals">Explore offers</a></div>
         <div class="hero-proof"><span>✓ Verified products</span><span>✓ Secure checkout</span><span>✓ No hidden
@@ -86,7 +91,7 @@
         <div><span class="section-kicker">Limited-time prices</span>
           <h2>Today's best deals</h2>
         </div>
-        <div class="countdown">Ends in <strong id="dealTimer">09:42:18</strong></div>
+        <div class="countdown" data-deadline-timestamp="2026-08-30T00:00:00Z">Ends in <strong id="dealTimer" class="countdown-value">09:42:18</strong></div>
       </div>
       <div class="deal-strip" id="dealStrip"></div>
     </section>
@@ -148,7 +153,8 @@
   </template>
   <div id="toastRegion" class="toast-region" aria-live="polite"></div>
   <div id="quickViewModal" class="modal" hidden></div>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=24"></script>
+  <script type="module" src="./demo_router.js?v=27"></script>
   <!-- AIORA JS Tag — coordination failure signal collector -->
   <script src="tag.js" data-client-id="shopora-prod" data-endpoint="http://localhost:4001/api/collect"
     data-sampling-rate="1.0" async></script>
