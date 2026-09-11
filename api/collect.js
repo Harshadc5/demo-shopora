@@ -67,6 +67,7 @@ export default async function handler(req, res) {
         const { error } = await supabase.from('events').insert([
           {
             client_id: payload.client_id,
+            session_token: payload.session_token || null,
             page_url: payload.page?.page_url || 'unknown',
             payload: payload
           }
