@@ -1,2 +1,28 @@
 node_modules/
 .DS_Store
+
+# Local-only reference/doc files (not part of the required demo deployment)
+.agents/
+.vscode/
+HOW-TO-RUN.md
+Observability layer prototype/
+Pdp Css Contract.md
+README.md
+SWITCH-TO-LOCAL.md
+WEBHOOK-SETUP.md
+assets/catalog/sheet-a.png
+assets/catalog/sheet-b.png
+assets/catalog/sheet-c.png
+assets/catalog/sheet-d.png
+assets/products/HOW-TO-ADD-PHOTOS.txt
+changelog_post_v1.1.md
+data/demo_scenarios.json
+frontend_architecture_spec.md
+full_spec.html
+full_spec.txt
+interaction_events.log
+logs/
+md files/
+pattern1.txt
+payloads.log
+tools/
