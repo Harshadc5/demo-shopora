@@ -2033,7 +2033,7 @@
             // CTA: the module itself if it's a link, else the first CTA inside it.
             var ctaEl = (el.tagName === 'A') ? el : firstMatch(el, ['a.button', 'button', 'b', 'a']);
             if (ctaEl) {
-                mod.cta_label = textOf(ctaEl, 40);
+                mod.cta_label = textOf(ctaEl, 80);
                 if (ctaEl.getAttribute && ctaEl.getAttribute('href')) mod.cta_href = ctaEl.getAttribute('href');
             }
 
@@ -2078,7 +2078,7 @@
                         if (offerText) heroMod.offer_text = offerText;
                         var heroCta = firstMatch(doc, FIELD_SEL.heroCta);
                         if (heroCta) {
-                            heroMod.cta_label = textOf(heroCta, 40);
+                            heroMod.cta_label = textOf(heroCta, 80);
                             if (heroCta.getAttribute('href')) heroMod.cta_href = heroCta.getAttribute('href');
                         }
                         modules.push(heroMod);
