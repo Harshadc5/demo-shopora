@@ -461,6 +461,7 @@
         <option value="250">Load 250 at a time</option>
         <option value="500">Load 500 at a time</option>
       </select>
+      <button id="refreshBtn" type="button">⟳ Refresh</button>
     </div>
 
     <div id="emptyState" class="empty-state" hidden>
@@ -493,6 +494,7 @@
       const searchBox = document.getElementById('searchBox');
       const pageTypeSelect = document.getElementById('pageTypeSelect');
       const batchSizeSelect = document.getElementById('batchSizeSelect');
+      const refreshBtn = document.getElementById('refreshBtn');
       const loadOlderBtn = document.getElementById('loadOlderBtn');
       const loadOlderStatus = document.getElementById('loadOlderStatus');
 
@@ -732,6 +734,15 @@
         }
       }
 
+      async function manualRefresh() {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '⟳ Refreshing…';
+        await loadInitialBatch();
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = '⟳ Refresh';
+      }
+
+      refreshBtn.addEventListener('click', manualRefresh);
       loadOlderBtn.addEventListener('click', loadOlderBatch);
       pageTypeSelect.addEventListener('change', loadInitialBatch);
       batchSizeSelect.addEventListener('change', loadInitialBatch);
