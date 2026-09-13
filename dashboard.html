@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIORA Live Feed — Shopora-estore</title>
+<link rel="icon" href="./favicon.svg">
+<style>
+:root{--navy:#10243e;--navy-2:#183654;--ink:#182230;--muted:#667085;--blue:#1463ff;--blue-dark:#0c49c7;--accent:#ffb000;--green:#12805c;--red:#d92d20;--surface:#fff;--soft:#f3f5f7;--line:#e4e7ec;--shadow:0 10px 30px rgba(16,36,62,.10);--radius:14px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#f5f6f8;color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5}
+a{color:inherit}
+
+header.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.2)}
+.top-inner{max-width:1400px;margin:0 auto;padding:.9rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.1rem;letter-spacing:-.03em}
+.brand-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ffcf53);color:var(--navy);display:grid;place-items:center;font-weight:900}
+.brand small{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#9eb4ca;font-weight:600}
+.status-pill{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:700;padding:.35rem .7rem;border-radius:99px;background:rgba(255,255,255,.08);color:#dce7f3;margin-left:auto}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#8a97a6}
+.status-pill.live .status-dot{background:#33d689;box-shadow:0 0 0 3px rgba(51,214,137,.25);animation:pulse 1.6s infinite}
+.status-pill.error .status-dot{background:var(--red)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(51,214,137,.45)}100%{box-shadow:0 0 0 7px rgba(51,214,137,0)}}
+
+main{max-width:1400px;margin:0 auto;padding:1.25rem}
+
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.1rem}
+.stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;box-shadow:0 3px 16px rgba(16,36,62,.05)}
+.stat-card span{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat-card strong{display:block;font-size:1.7rem;letter-spacing:-.03em;margin-top:.3rem;font-variant-numeric:tabular-nums}
+
+.toolbar{display:flex;gap:.6rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+.toolbar input[type="search"]{flex:1;min-width:220px;border:1px solid #d0d5dd;border-radius:9px;padding:.6rem .85rem;font:inherit;background:#fff}
+.toolbar button{border:1px solid #d0d5dd;background:#fff;border-radius:9px;padding:.6rem .9rem;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
+.toolbar button.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.toolbar .clear-btn{margin-left:auto;color:var(--red);border-color:#f3c6c2}
+
+.empty-state{text-align:center;padding:4rem 1rem;background:#fff;border:1px dashed var(--line);border-radius:var(--radius);color:var(--muted)}
+.empty-state span{font-size:2.2rem;display:block;margin-bottom:.5rem}
+
+#feed{display:grid;gap:.75rem}
+.event-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 3px 12px rgba(16,36,62,.04);overflow:hidden;animation:slide-in .3s ease}
+@keyframes slide-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.event-head{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.05rem;cursor:pointer;flex-wrap:wrap}
+.page-chip{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.28rem .55rem;border-radius:6px;background:var(--soft);color:var(--navy-2);white-space:nowrap}
+.page-chip.homepage{background:#eaf1ff;color:var(--blue-dark)}
+.page-chip.cart{background:#fff4d6;color:#7a4f00}
+.page-chip.pdp{background:#eafaf2;color:var(--green)}
+.page-chip.category{background:#f3ecff;color:#6a3bd1}
+.page-chip.checkout{background:#ffe9e6;color:#b02a20}
+.event-url{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px}
+.event-meta{margin-left:auto;display:flex;gap:.9rem;align-items:center;font-size:.72rem;color:var(--muted)}
+.event-meta code{background:var(--soft);padding:.15rem .4rem;border-radius:5px;font-size:.68rem}
+.event-time{font-variant-numeric:tabular-nums;white-space:nowrap}
+.chevron{transition:.2s;color:var(--muted);font-size:.8rem}
+.event-card.open .chevron{transform:rotate(90deg)}
+.event-signals{display:flex;gap:.5rem;flex-wrap:wrap;padding:0 1.05rem .85rem;font-size:.72rem}
+.signal-badge{background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:.22rem .6rem;color:#344054}
+.signal-badge.warn{background:#fff4e5;border-color:#ffdca8;color:#8a5400}
+.event-body{display:none;border-top:1px solid var(--line);background:#0b1c32}
+.event-card.open .event-body{display:block}
+.event-body pre{margin:0;padding:1rem 1.05rem;color:#d7e3f0;font-size:.75rem;line-height:1.55;overflow-x:auto;max-height:360px;font-family:'SFMono-Regular',Consolas,monospace}
+
+footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size:.72rem;color:var(--muted)}
+
+@media(max-width:760px){
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .event-url{max-width:180px}
+  .event-meta{width:100%;margin-left:0;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div>AIORA Live Feed<small>tag.js signals — Shopora demo</small></div>
+    </div>
+    <span class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">Connecting…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="stat-row">
+    <div class="stat-card"><span>Events received</span><strong id="statTotal">0</strong></div>
+    <div class="stat-card"><span>Unique sessions</span><strong id="statSessions">0</strong></div>
+    <div class="stat-card"><span>Last 5 minutes</span><strong id="statRecent">0</strong></div>
+    <div class="stat-card"><span>Pages seen</span><strong id="statPages">0</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <input type="search" id="searchBox" placeholder="Filter by page URL, client ID, or session token…">
+    <button id="pauseBtn">⏸ Pause feed</button>
+    <button class="clear-btn" id="clearBtn">Clear view</button>
+  </div>
+
+  <div id="emptyState" class="empty-state" hidden>
+    <span>📡</span>
+    No events yet — trigger a scenario on the live site and it'll appear here instantly.
+  </div>
+
+  <div id="feed"></div>
+</main>
+
+<footer class="note">
+  Reads directly from Supabase's <code>events</code> table via Realtime — no data leaves your project. This page is unauthenticated; don't put anything sensitive through the demo while it's shared.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function () {
+  const feedEl = document.getElementById('feed');
+  const emptyState = document.getElementById('emptyState');
+  const statusPill = document.getElementById('statusPill');
+  const statusText = document.getElementById('statusText');
+  const searchBox = document.getElementById('searchBox');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  const statTotal = document.getElementById('statTotal');
+  const statSessions = document.getElementById('statSessions');
+  const statRecent = document.getElementById('statRecent');
+  const statPages = document.getElementById('statPages');
+
+  let rows = [];
+  let paused = false;
+  let seenSessions = new Set();
+  let seenPages = new Set();
+
+  function setStatus(state, text) {
+    statusPill.className = 'status-pill ' + state;
+    statusText.textContent = text;
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '—';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (e) { return iso; }
+  }
+
+  function shortId(id) {
+    if (!id) return '—';
+    return String(id).length > 10 ? String(id).slice(0, 8) + '…' : id;
+  }
+
+  function pageTypeFromPayload(payload) {
+    return (payload && payload.page && payload.page.page_type) || 'unknown';
+  }
+
+  function buildSignalBadges(payload) {
+    const sig = (payload && payload.signals) || {};
+    const badges = [];
+    const banners = sig.promo_banners || [];
+    if (banners.length) badges.push({ text: `${banners.length} promo banner${banners.length > 1 ? 's' : ''}`, warn: false });
+    const offers = sig.fulfillment_offers || [];
+    if (offers.length) badges.push({ text: `${offers.length} fulfillment offer${offers.length > 1 ? 's' : ''}`, warn: false });
+    if (sig.cart_state) {
+      badges.push({ text: `cart: ${sig.cart_state.item_count ?? 0} items / ${sig.cart_state.subtotal ?? '—'}`, warn: false });
+    }
+    const tiles = sig.tiles || [];
+    if (tiles.length) {
+      const markdownCount = tiles.filter(t => t.has_markdown).length;
+      badges.push({ text: `${tiles.length} tiles captured`, warn: false });
+      if (markdownCount) badges.push({ text: `${markdownCount} with markdown pricing`, warn: true });
+    }
+    if (!badges.length) badges.push({ text: 'no signals captured', warn: false });
+    return badges;
+  }
+
+  function renderRow(row) {
+    const payload = row.payload || {};
+    const pageType = pageTypeFromPayload(payload);
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.dataset.search = [
+      row.page_url, row.client_id, row.session_token, pageType
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    const head = document.createElement('div');
+    head.className = 'event-head';
+    head.innerHTML = `
+      <span class="page-chip ${pageType}">${pageType}</span>
+      <span class="event-url" title="${row.page_url || ''}">${row.page_url || 'unknown URL'}</span>
+      <span class="event-meta">
+        <span>client <code>${shortId(row.client_id)}</code></span>
+        <span>session <code>${shortId(row.session_token)}</code></span>
+        <span class="event-time">${fmtTime(payload.timestamp || row.created_at)}</span>
+        <span class="chevron">▶</span>
+      </span>
+    `;
+    head.addEventListener('click', () => card.classList.toggle('open'));
+
+    const signalsEl = document.createElement('div');
+    signalsEl.className = 'event-signals';
+    buildSignalBadges(payload).forEach(b => {
+      const s = document.createElement('span');
+      s.className = 'signal-badge' + (b.warn ? ' warn' : '');
+      s.textContent = b.text;
+      signalsEl.appendChild(s);
+    });
+
+    const body = document.createElement('div');
+    body.className = 'event-body';
+    const pre = document.createElement('pre');
+    pre.textContent = JSON.stringify(payload, null, 2);
+    body.appendChild(pre);
+
+    card.appendChild(head);
+    card.appendChild(signalsEl);
+    card.appendChild(body);
+    return card;
+  }
+
+  function updateStats() {
+    statTotal.textContent = rows.length;
+    statSessions.textContent = seenSessions.size;
+    statPages.textContent = seenPages.size;
+    const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+    statRecent.textContent = rows.filter(r => {
+      const t = r.payload && r.payload.timestamp ? new Date(r.payload.timestamp).getTime() : (r.created_at ? new Date(r.created_at).getTime() : 0);
+      return t >= fiveMinAgo;
+    }).length;
+  }
+
+  function addRow(row, prepend) {
+    rows.push(row);
+    if (row.session_token) seenSessions.add(row.session_token);
+    const pageType = pageTypeFromPayload(row.payload || {});
+    seenPages.add(pageType);
+    emptyState.hidden = true;
+
+    const card = renderRow(row);
+    if (prepend) feedEl.prepend(card); else feedEl.appendChild(card);
+    applyFilter();
+    updateStats();
+  }
+
+  function applyFilter() {
+    const q = searchBox.value.trim().toLowerCase();
+    Array.from(feedEl.children).forEach(card => {
+      card.style.display = (!q || card.dataset.search.includes(q)) ? '' : 'none';
+    });
+  }
+
+  searchBox.addEventListener('input', applyFilter);
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? '▶ Resume feed' : '⏸ Pause feed';
+    pauseBtn.classList.toggle('active', paused);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    rows = [];
+    seenSessions = new Set();
+    seenPages = new Set();
+    feedEl.innerHTML = '';
+    emptyState.hidden = false;
+    updateStats();
+  });
+
+  async function init() {
+    let config;
+    try {
+      const res = await fetch('/api/public-config');
+      config = await res.json();
+    } catch (e) {
+      setStatus('error', 'Could not reach /api/public-config');
+      return;
+    }
+
+    if (!config.supabaseUrl || !config.supabaseAnonKey) {
+      setStatus('error', 'Supabase env vars not configured');
+      emptyState.hidden = false;
+      emptyState.innerHTML = '<span>⚠️</span>Supabase URL/anon key are not set as environment variables on this deployment.';
+      return;
+    }
+
+    const client = supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+    // Initial backfill — most recent 50 events, oldest first so they read top-to-bottom
+    // like a normal feed once reversed onto the page.
+    const { data, error } = await client
+      .from('events')
+      .select('*')
+      .order('id', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      setStatus('error', 'Read blocked — check RLS policy');
+      emptyState.hidden = false;
+      emptyState.innerHTML = '<span>🔒</span>Could not read the events table (' + error.message + '). The anon role likely needs a SELECT policy on <code>events</code>.';
+    } else {
+      (data || []).slice().reverse().forEach(row => addRow(row, true));
+      emptyState.hidden = rows.length > 0;
+    }
+
+    // Live feed
+    const channel = client
+      .channel('events-live-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, (payload) => {
+        if (paused) return;
+        addRow(payload.new, true);
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') setStatus('live', 'Live');
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setStatus('error', 'Realtime connection failed');
+        else if (status === 'CLOSED') setStatus('', 'Disconnected');
+      });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
