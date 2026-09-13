@@ -25,7 +25,8 @@ header.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;bo
 
 main{max-width:1400px;margin:0 auto;padding:1.25rem}
 
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.1rem}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:1.1rem}
+.toolbar select{border:1px solid #d0d5dd;border-radius:9px;padding:.6rem .85rem;font:inherit;background:#fff;color:var(--ink)}
 .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem 1.1rem;box-shadow:0 3px 16px rgba(16,36,62,.05)}
 .stat-card span{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .stat-card strong{display:block;font-size:1.7rem;letter-spacing:-.03em;margin-top:.3rem;font-variant-numeric:tabular-nums}
@@ -85,7 +86,8 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
 
 <main>
   <div class="stat-row">
-    <div class="stat-card"><span>Events received</span><strong id="statTotal">0</strong></div>
+    <div class="stat-card"><span>Total in database</span><strong id="statDbTotal">—</strong></div>
+    <div class="stat-card"><span>Loaded in view</span><strong id="statTotal">0</strong></div>
     <div class="stat-card"><span>Unique sessions</span><strong id="statSessions">0</strong></div>
     <div class="stat-card"><span>Last 5 minutes</span><strong id="statRecent">0</strong></div>
     <div class="stat-card"><span>Pages seen</span><strong id="statPages">0</strong></div>
@@ -93,6 +95,22 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
 
   <div class="toolbar">
     <input type="search" id="searchBox" placeholder="Filter by page URL, client ID, or session token…">
+    <select id="pageTypeSelect" title="Filter by page type (queries Supabase directly)">
+      <option value="">All page types</option>
+      <option value="homepage">Homepage</option>
+      <option value="category">Category</option>
+      <option value="pdp">PDP</option>
+      <option value="cart">Cart</option>
+      <option value="checkout">Checkout</option>
+      <option value="orders">Orders</option>
+    </select>
+    <select id="batchSizeSelect" title="How many rows to load per fetch">
+      <option value="25">Load 25 at a time</option>
+      <option value="50" selected>Load 50 at a time</option>
+      <option value="100">Load 100 at a time</option>
+      <option value="250">Load 250 at a time</option>
+      <option value="500">Load 500 at a time</option>
+    </select>
     <button id="pauseBtn">⏸ Pause feed</button>
     <button class="clear-btn" id="clearBtn">Clear view</button>
   </div>
@@ -103,6 +121,11 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   </div>
 
   <div id="feed"></div>
+
+  <div style="text-align:center;margin-top:1rem">
+    <button id="loadOlderBtn" style="border:1px solid #d0d5dd;background:#fff;border-radius:9px;padding:.7rem 1.4rem;font:inherit;font-weight:700;cursor:pointer">Load older events</button>
+    <div id="loadOlderStatus" style="font-size:.72rem;color:var(--muted);margin-top:.5rem"></div>
+  </div>
 </main>
 
 <footer class="note">
@@ -117,9 +140,14 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   const statusPill = document.getElementById('statusPill');
   const statusText = document.getElementById('statusText');
   const searchBox = document.getElementById('searchBox');
+  const pageTypeSelect = document.getElementById('pageTypeSelect');
+  const batchSizeSelect = document.getElementById('batchSizeSelect');
   const pauseBtn = document.getElementById('pauseBtn');
   const clearBtn = document.getElementById('clearBtn');
+  const loadOlderBtn = document.getElementById('loadOlderBtn');
+  const loadOlderStatus = document.getElementById('loadOlderStatus');
 
+  const statDbTotal = document.getElementById('statDbTotal');
   const statTotal = document.getElementById('statTotal');
   const statSessions = document.getElementById('statSessions');
   const statRecent = document.getElementById('statRecent');
@@ -129,6 +157,9 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   let paused = false;
   let seenSessions = new Set();
   let seenPages = new Set();
+  let oldestLoadedId = null;   // cursor for "load older"
+  let noMoreOlder = false;
+  let client = null;
 
   function setStatus(state, text) {
     statusPill.className = 'status-pill ' + state;
@@ -234,6 +265,8 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     seenPages.add(pageType);
     emptyState.hidden = true;
 
+    if (oldestLoadedId === null || row.id < oldestLoadedId) oldestLoadedId = row.id;
+
     const card = renderRow(row);
     if (prepend) feedEl.prepend(card); else feedEl.appendChild(card);
     applyFilter();
@@ -255,14 +288,88 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     pauseBtn.classList.toggle('active', paused);
   });
 
-  clearBtn.addEventListener('click', () => {
+  function resetView() {
     rows = [];
     seenSessions = new Set();
     seenPages = new Set();
+    oldestLoadedId = null;
+    noMoreOlder = false;
     feedEl.innerHTML = '';
     emptyState.hidden = false;
+    loadOlderStatus.textContent = '';
+    loadOlderBtn.hidden = false;
     updateStats();
-  });
+  }
+
+  clearBtn.addEventListener('click', resetView);
+
+  // Every query goes through this so the page-type dropdown is a real
+  // Supabase-side filter (payload->page->>page_type), not just a client-side
+  // text match — the search box stays client-side/instant on top of it.
+  function buildQuery() {
+    let q = client.from('events').select('*').order('id', { ascending: false });
+    const pageType = pageTypeSelect.value;
+    if (pageType) q = q.eq('payload->page->>page_type', pageType);
+    return q;
+  }
+
+  function currentBatchSize() {
+    return parseInt(batchSizeSelect.value, 10) || 50;
+  }
+
+  async function refreshDbTotal() {
+    let q = client.from('events').select('*', { count: 'exact', head: true });
+    const pageType = pageTypeSelect.value;
+    if (pageType) q = q.eq('payload->page->>page_type', pageType);
+    const { count, error } = await q;
+    statDbTotal.textContent = error ? '—' : (count ?? '—');
+  }
+
+  async function loadInitialBatch() {
+    resetView();
+    const { data, error } = await buildQuery().limit(currentBatchSize());
+
+    if (error) {
+      setStatus('error', 'Read blocked — check RLS policy');
+      emptyState.hidden = false;
+      emptyState.innerHTML = '<span>🔒</span>Could not read the events table (' + error.message + '). The anon role likely needs a SELECT policy on <code>events</code>.';
+      return;
+    }
+
+    (data || []).slice().reverse().forEach(row => addRow(row, true));
+    emptyState.hidden = rows.length > 0;
+    if ((data || []).length < currentBatchSize()) {
+      noMoreOlder = true;
+      loadOlderBtn.hidden = true;
+    }
+    refreshDbTotal();
+  }
+
+  async function loadOlderBatch() {
+    if (noMoreOlder || oldestLoadedId === null) return;
+    loadOlderBtn.disabled = true;
+    loadOlderStatus.textContent = 'Loading…';
+
+    const { data, error } = await buildQuery().lt('id', oldestLoadedId).limit(currentBatchSize());
+
+    loadOlderBtn.disabled = false;
+    if (error) {
+      loadOlderStatus.textContent = 'Could not load more: ' + error.message;
+      return;
+    }
+    (data || []).forEach(row => addRow(row, false));
+    if ((data || []).length < currentBatchSize()) {
+      noMoreOlder = true;
+      loadOlderBtn.hidden = true;
+      loadOlderStatus.textContent = 'No older events left in the database.';
+    } else {
+      loadOlderStatus.textContent = '';
+    }
+  }
+
+  loadOlderBtn.addEventListener('click', loadOlderBatch);
+  pageTypeSelect.addEventListener('change', loadInitialBatch);
+  batchSizeSelect.addEventListener('change', loadInitialBatch);
 
   async function init() {
     let config;
@@ -281,31 +388,21 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
       return;
     }
 
-    const client = supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+    client = supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
 
-    // Initial backfill — most recent 50 events, oldest first so they read top-to-bottom
-    // like a normal feed once reversed onto the page.
-    const { data, error } = await client
-      .from('events')
-      .select('*')
-      .order('id', { ascending: false })
-      .limit(50);
+    await loadInitialBatch();
 
-    if (error) {
-      setStatus('error', 'Read blocked — check RLS policy');
-      emptyState.hidden = false;
-      emptyState.innerHTML = '<span>🔒</span>Could not read the events table (' + error.message + '). The anon role likely needs a SELECT policy on <code>events</code>.';
-    } else {
-      (data || []).slice().reverse().forEach(row => addRow(row, true));
-      emptyState.hidden = rows.length > 0;
-    }
-
-    // Live feed
+    // Live feed — respects the current page-type filter, but always
+    // ignores the "N at a time" batch size (a live feed of new events isn't
+    // paginated, it just keeps arriving).
     const channel = client
       .channel('events-live-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, (payload) => {
         if (paused) return;
+        const pageType = pageTypeSelect.value;
+        if (pageType && pageTypeFromPayload(payload.new.payload || {}) !== pageType) return;
         addRow(payload.new, true);
+        refreshDbTotal();
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') setStatus('live', 'Live');
