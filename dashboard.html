@@ -35,7 +35,6 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 .toolbar input[type="search"]{flex:1;min-width:220px;border:1px solid #d0d5dd;border-radius:9px;padding:.6rem .85rem;font:inherit;background:#fff}
 .toolbar button{border:1px solid #d0d5dd;background:#fff;border-radius:9px;padding:.6rem .9rem;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
 .toolbar button.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.toolbar .clear-btn{margin-left:auto;color:var(--red);border-color:#f3c6c2}
 
 .empty-state{text-align:center;padding:4rem 1rem;background:#fff;border:1px dashed var(--line);border-radius:var(--radius);color:var(--muted)}
 .empty-state span{font-size:2.2rem;display:block;margin-bottom:.5rem}
@@ -43,16 +42,18 @@ main{max-width:1400px;margin:0 auto;padding:1.25rem}
 #feed{display:grid;gap:.75rem}
 .event-card{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 3px 12px rgba(16,36,62,.04);overflow:hidden;animation:slide-in .3s ease}
 @keyframes slide-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.event-head{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.05rem;cursor:pointer;flex-wrap:wrap}
+.event-head{padding:.85rem 1.05rem;cursor:pointer;display:flex;flex-direction:column;gap:.55rem}
+.event-top{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
 .page-chip{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.28rem .55rem;border-radius:6px;background:var(--soft);color:var(--navy-2);white-space:nowrap}
 .page-chip.homepage{background:#eaf1ff;color:var(--blue-dark)}
 .page-chip.cart{background:#fff4d6;color:#7a4f00}
 .page-chip.pdp{background:#eafaf2;color:var(--green)}
 .page-chip.category{background:#f3ecff;color:#6a3bd1}
 .page-chip.checkout{background:#ffe9e6;color:#b02a20}
-.event-url{font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px}
-.event-meta{margin-left:auto;display:flex;gap:.9rem;align-items:center;font-size:.72rem;color:var(--muted)}
-.event-meta code{background:var(--soft);padding:.15rem .4rem;border-radius:5px;font-size:.68rem}
+.page-chip.interaction_events{background:#e6f7fb;color:#0f6674}
+.event-url{font-size:.82rem;color:var(--muted);flex:1;min-width:0;word-break:break-all}
+.event-meta{display:flex;gap:1.1rem;align-items:center;justify-content:center;flex-wrap:wrap;font-size:.72rem;color:var(--muted);text-align:center}
+.event-meta code{background:var(--soft);padding:.15rem .4rem;border-radius:5px;font-size:.68rem;word-break:break-all}
 .event-time{font-variant-numeric:tabular-nums;white-space:nowrap}
 .chevron{transition:.2s;color:var(--muted);font-size:.8rem}
 .event-card.open .chevron{transform:rotate(90deg)}
@@ -67,8 +68,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
 
 @media(max-width:760px){
   .stat-row{grid-template-columns:repeat(2,1fr)}
-  .event-url{max-width:180px}
-  .event-meta{width:100%;margin-left:0;justify-content:space-between}
 }
 </style>
 </head>
@@ -103,6 +102,7 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
       <option value="cart">Cart</option>
       <option value="checkout">Checkout</option>
       <option value="orders">Orders</option>
+      <option value="interaction_events">Interaction Events</option>
     </select>
     <select id="batchSizeSelect" title="How many rows to load per fetch">
       <option value="25">Load 25 at a time</option>
@@ -111,8 +111,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
       <option value="250">Load 250 at a time</option>
       <option value="500">Load 500 at a time</option>
     </select>
-    <button id="pauseBtn">⏸ Pause feed</button>
-    <button class="clear-btn" id="clearBtn">Clear view</button>
   </div>
 
   <div id="emptyState" class="empty-state" hidden>
@@ -142,8 +140,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   const searchBox = document.getElementById('searchBox');
   const pageTypeSelect = document.getElementById('pageTypeSelect');
   const batchSizeSelect = document.getElementById('batchSizeSelect');
-  const pauseBtn = document.getElementById('pauseBtn');
-  const clearBtn = document.getElementById('clearBtn');
   const loadOlderBtn = document.getElementById('loadOlderBtn');
   const loadOlderStatus = document.getElementById('loadOlderStatus');
 
@@ -154,8 +150,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   const statPages = document.getElementById('statPages');
 
   let rows = [];
-  let paused = false;
-  let seenSessions = new Set();
   let seenPages = new Set();
   let oldestLoadedId = null;   // cursor for "load older"
   let noMoreOlder = false;
@@ -174,13 +168,17 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     } catch (e) { return iso; }
   }
 
-  function shortId(id) {
-    if (!id) return '—';
-    return String(id).length > 10 ? String(id).slice(0, 8) + '…' : id;
+  // Interaction-event beacons (tag.js's Tier 10 buffer flush) carry
+  // envelope_type: "interaction_events" and have no `page` block at all —
+  // that's a real, distinct beacon type, not a missing/unrecognized one.
+  function pageTypeFromPayload(payload) {
+    if (payload && payload.envelope_type === 'interaction_events') return 'interaction_events';
+    return (payload && payload.page && payload.page.page_type) || 'unknown';
   }
 
-  function pageTypeFromPayload(payload) {
-    return (payload && payload.page && payload.page.page_type) || 'unknown';
+  function pageTypeLabel(pageType) {
+    if (pageType === 'interaction_events') return 'Interaction Events';
+    return pageType;
   }
 
   function buildSignalBadges(payload) {
@@ -199,7 +197,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
       badges.push({ text: `${tiles.length} tiles captured`, warn: false });
       if (markdownCount) badges.push({ text: `${markdownCount} with markdown pricing`, warn: true });
     }
-    if (!badges.length) badges.push({ text: 'no signals captured', warn: false });
     return badges;
   }
 
@@ -215,25 +212,31 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     const head = document.createElement('div');
     head.className = 'event-head';
     head.innerHTML = `
-      <span class="page-chip ${pageType}">${pageType}</span>
-      <span class="event-url" title="${row.page_url || ''}">${row.page_url || 'unknown URL'}</span>
-      <span class="event-meta">
-        <span>client <code>${shortId(row.client_id)}</code></span>
-        <span>session <code>${shortId(row.session_token)}</code></span>
-        <span class="event-time">${fmtTime(payload.timestamp || row.created_at)}</span>
+      <span class="event-top">
+        <span class="page-chip ${pageType}">${pageTypeLabel(pageType)}</span>
+        <span class="event-url" title="${row.page_url || ''}">${row.page_url || 'unknown URL'}</span>
         <span class="chevron">▶</span>
+      </span>
+      <span class="event-meta">
+        <span>client <code>${row.client_id || '—'}</code></span>
+        <span>session <code>${row.session_token || '—'}</code></span>
+        <span class="event-time">${fmtTime(payload.timestamp || row.created_at)}</span>
       </span>
     `;
     head.addEventListener('click', () => card.classList.toggle('open'));
 
-    const signalsEl = document.createElement('div');
-    signalsEl.className = 'event-signals';
-    buildSignalBadges(payload).forEach(b => {
-      const s = document.createElement('span');
-      s.className = 'signal-badge' + (b.warn ? ' warn' : '');
-      s.textContent = b.text;
-      signalsEl.appendChild(s);
-    });
+    const badges = buildSignalBadges(payload);
+    let signalsEl = null;
+    if (badges.length) {
+      signalsEl = document.createElement('div');
+      signalsEl.className = 'event-signals';
+      badges.forEach(b => {
+        const s = document.createElement('span');
+        s.className = 'signal-badge' + (b.warn ? ' warn' : '');
+        s.textContent = b.text;
+        signalsEl.appendChild(s);
+      });
+    }
 
     const body = document.createElement('div');
     body.className = 'event-body';
@@ -242,14 +245,13 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     body.appendChild(pre);
 
     card.appendChild(head);
-    card.appendChild(signalsEl);
+    if (signalsEl) card.appendChild(signalsEl);
     card.appendChild(body);
     return card;
   }
 
   function updateStats() {
     statTotal.textContent = rows.length;
-    statSessions.textContent = seenSessions.size;
     statPages.textContent = seenPages.size;
     const fiveMinAgo = Date.now() - 5 * 60 * 1000;
     statRecent.textContent = rows.filter(r => {
@@ -260,7 +262,6 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
 
   function addRow(row, prepend) {
     rows.push(row);
-    if (row.session_token) seenSessions.add(row.session_token);
     const pageType = pageTypeFromPayload(row.payload || {});
     seenPages.add(pageType);
     emptyState.hidden = true;
@@ -282,15 +283,8 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
 
   searchBox.addEventListener('input', applyFilter);
 
-  pauseBtn.addEventListener('click', () => {
-    paused = !paused;
-    pauseBtn.textContent = paused ? '▶ Resume feed' : '⏸ Pause feed';
-    pauseBtn.classList.toggle('active', paused);
-  });
-
   function resetView() {
     rows = [];
-    seenSessions = new Set();
     seenPages = new Set();
     oldestLoadedId = null;
     noMoreOlder = false;
@@ -301,16 +295,22 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     updateStats();
   }
 
-  clearBtn.addEventListener('click', resetView);
+  // Interaction-event rows have no `page` block at all (see
+  // pageTypeFromPayload above), so they need their own filter path —
+  // envelope_type — instead of the payload->page->>page_type used by
+  // every normal page-view row.
+  function applyPageTypeFilter(q) {
+    const pageType = pageTypeSelect.value;
+    if (!pageType) return q;
+    if (pageType === 'interaction_events') return q.eq('payload->>envelope_type', 'interaction_events');
+    return q.eq('payload->page->>page_type', pageType);
+  }
 
   // Every query goes through this so the page-type dropdown is a real
-  // Supabase-side filter (payload->page->>page_type), not just a client-side
-  // text match — the search box stays client-side/instant on top of it.
+  // Supabase-side filter, not just a client-side text match — the search
+  // box stays client-side/instant on top of it.
   function buildQuery() {
-    let q = client.from('events').select('*').order('id', { ascending: false });
-    const pageType = pageTypeSelect.value;
-    if (pageType) q = q.eq('payload->page->>page_type', pageType);
-    return q;
+    return applyPageTypeFilter(client.from('events').select('*').order('id', { ascending: false }));
   }
 
   function currentBatchSize() {
@@ -318,11 +318,22 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
   }
 
   async function refreshDbTotal() {
-    let q = client.from('events').select('*', { count: 'exact', head: true });
-    const pageType = pageTypeSelect.value;
-    if (pageType) q = q.eq('payload->page->>page_type', pageType);
-    const { count, error } = await q;
+    const { count, error } = await applyPageTypeFilter(client.from('events').select('*', { count: 'exact', head: true }));
     statDbTotal.textContent = error ? '—' : (count ?? '—');
+  }
+
+  // "Unique sessions" is a true count of distinct session_token values
+  // across every matching row in the database — not just whatever happens
+  // to be loaded on screen. It's recomputed on every load/filter change and
+  // on every new live event, so it never drifts from what's actually in
+  // Supabase (unlike counting only the currently rendered batch would).
+  async function refreshUniqueSessions() {
+    const { data, error } = await applyPageTypeFilter(
+      client.from('events').select('session_token').limit(20000)
+    );
+    if (error) { statSessions.textContent = '—'; return; }
+    const distinct = new Set((data || []).map(r => r.session_token).filter(Boolean));
+    statSessions.textContent = distinct.size;
   }
 
   async function loadInitialBatch() {
@@ -343,6 +354,7 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
       loadOlderBtn.hidden = true;
     }
     refreshDbTotal();
+    refreshUniqueSessions();
   }
 
   async function loadOlderBatch() {
@@ -398,11 +410,11 @@ footer.note{max-width:1400px;margin:1.5rem auto 3rem;padding:0 1.25rem;font-size
     const channel = client
       .channel('events-live-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, (payload) => {
-        if (paused) return;
         const pageType = pageTypeSelect.value;
         if (pageType && pageTypeFromPayload(payload.new.payload || {}) !== pageType) return;
         addRow(payload.new, true);
         refreshDbTotal();
+        refreshUniqueSessions();
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') setStatus('live', 'Live');
