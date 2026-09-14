@@ -2125,13 +2125,13 @@
                 // claim at all unless a demo scenario injects one.
                 var newsletterEl = doc.querySelector('.newsletter');
                 if (newsletterEl) {
-                    var newsletterMod = buildModule(newsletterEl, 'newsletter', position++);
-                    if (newsletterMod && newsletterMod.claim) modules.push(newsletterMod);
+                    var newsletterMod = buildModule(newsletterEl, 'newsletter', position);
+                    if (newsletterMod && newsletterMod.claim) { modules.push(newsletterMod); position++; }
                 }
                 var loyaltyOfferEl = doc.querySelector('.rail-offer');
                 if (loyaltyOfferEl) {
-                    var loyaltyMod = buildModule(loyaltyOfferEl, 'loyalty', position++);
-                    if (loyaltyMod && loyaltyMod.claim) modules.push(loyaltyMod);
+                    var loyaltyMod = buildModule(loyaltyOfferEl, 'loyalty', position);
+                    if (loyaltyMod && loyaltyMod.claim) { modules.push(loyaltyMod); position++; }
                 }
 
                 if (modules.length) result.modules = modules;
