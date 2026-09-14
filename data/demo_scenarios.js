@@ -329,6 +329,13 @@ export const demoScenarios = {
             ]
         }
     },
+    // 3.5: fashion category, top 6 positions are 5-of-6 Luna. Reuses
+    // renderCategoryTiles() as-is (no new code) — all real fashion SKUs
+    // already carry their real brands, no overrides needed.
+    "luna-dominance": {
+        "target_page": "category",
+        "categoryTiles": ["fa-1", "fa-2", "fa-4", "fa-5", "fa-7", "fa-3", "fa-6", "fa-8", "fa-9", "fa-10"]
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {
