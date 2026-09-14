@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=27';
+import { demoScenarios } from './data/demo_scenarios.js?v=28';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.promoModule) renderPromoModule(scenario.promoModule);   // Pattern 4 (4.4/4.5)
     if (scenario.disableAddToCart) disableAddToCart();   // Pattern 4 (4.5)
     if (scenario.loyaltyPrompt) renderLoyaltyPromptOverride(scenario.loyaltyPrompt);  // Pattern 5 (5.2)
+    if (scenario.cartBadgeCount !== undefined) overrideCartBadge(scenario.cartBadgeCount);  // Pattern 5 (5.3)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
@@ -305,6 +306,18 @@ function renderLoyaltyPromptOverride(config) {
     el.style.cssText = 'margin-top:1rem;padding:0.85rem 1rem;background:#f4f6fa;border-radius:10px;font-size:0.85rem;text-align:center;color:var(--navy,#10243e);';
     el.textContent = config.text || 'Not a member? Join for 5% off.';
     summary.appendChild(el);
+}
+
+// Pattern 5 (5.3): sets the header cart badge to an explicit count on a
+// non-cart page (homepage/category), independent of real cart storage —
+// this scenario needs "2" on the homepage and "0" on the category page
+// after a plain navigation, with no add/remove interaction in between, to
+// show cart state silently vanishing across a page load.
+function overrideCartBadge(count) {
+    document.querySelectorAll('[data-cart-count]').forEach(node => {
+        node.dataset.cartCount = count;
+        node.textContent = String(count);
+    });
 }
 
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card

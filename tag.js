@@ -1861,15 +1861,24 @@
                 }
 
                 var headerCartEl = firstMatch(doc, FIELD_SEL.cartCount);
-                var cartItemLabelEl = firstMatch(doc, FIELD_SEL.cartItemLabel);
-                if (headerCartEl && cartItemLabelEl) {
+                if (headerCartEl) {
                     var headerCount = parseInt(
                         headerCartEl.getAttribute('data-cart-count') || headerCartEl.textContent
                     );
+                    // Reported on EVERY page type, not just when a page-level
+                    // item-count label also exists (that only exists on
+                    // cart.html) — otherwise the header badge count is never
+                    // captured at all on homepage/category/PDP/search, and a
+                    // cart count that silently changes across navigation with
+                    // no add/remove event in between would be invisible.
+                    if (!isNaN(headerCount)) signals.cart_badge_count = headerCount;
+                }
+                var cartItemLabelEl = firstMatch(doc, FIELD_SEL.cartItemLabel);
+                if (headerCartEl && cartItemLabelEl && !isNaN(signals.cart_badge_count)) {
                     var pageCount = parseInt(cartItemLabelEl.textContent);
-                    if (!isNaN(headerCount) && !isNaN(pageCount)) {
-                        signals.cart_count_match = headerCount === pageCount;
-                        signals.cart_count_header = headerCount;
+                    if (!isNaN(pageCount)) {
+                        signals.cart_count_match = signals.cart_badge_count === pageCount;
+                        signals.cart_count_header = signals.cart_badge_count;
                         signals.cart_count_page = pageCount;
                     }
                 }

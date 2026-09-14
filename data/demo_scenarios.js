@@ -497,5 +497,23 @@ export const demoScenarios = {
             "identityState": "guest",
             "text": "Not a member? Join for 5% off."
         }
+    },
+    // Pattern 5 (5.3): cart count silently changes across a plain page
+    // navigation with no add/remove interaction in between. cartBadgeCount
+    // just sets the header badge directly (independent of real cart
+    // storage, which demo mode never touches anyway). navOverrides catches
+    // BOTH real "Mobiles & Electronics" links (dept-rail + hero category
+    // card) so clicking either one lands on cart-lost specifically, instead
+    // of carrying cart-has-2-items forward (which would keep showing "2").
+    "cart-has-2-items": {
+        "target_page": "homepage",
+        "cartBadgeCount": 2,
+        "navOverrides": [
+            { "selector": "a[href*='category.html?category=electronics']", "destination": "./category.html?category=electronics&demo=cart-lost" }
+        ]
+    },
+    "cart-lost": {
+        "target_page": "category",
+        "cartBadgeCount": 0
     }
 };
