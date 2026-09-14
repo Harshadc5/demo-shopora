@@ -308,6 +308,27 @@ export const demoScenarios = {
             ]
         }
     },
+    // 3.4: cart has 1x VoltMax Laptop Pro (el-1); the "Customers also
+    // bought" recommendations below it are 4-for-4 VoltMax too — zero
+    // cross-brand diversification despite plenty of complementary products
+    // from other brands in the catalog. Requires the tag.js EXCLUDE_SURFACES
+    // fix (recommendation tiles were previously dropped from extraction
+    // entirely) plus the new recommendations-module block for parent_context.
+    "cart-recs-single-brand": {
+        "target_page": "cart",
+        "cart": {
+            "items": [{ "sku": "el-1", "qty": 1 }]
+        },
+        "cartRecommendations": {
+            "parentContext": "cart:el-1",
+            "tiles": [
+                { "sku": "el-4" },
+                { "sku": "el-7" },
+                { "sku": "el-10" },
+                { "sku": "demo-vm-sleeve", "name": "VoltMax Laptop Sleeve", "brand": "VoltMax", "category": "electronics", "price": 24.99, "oldPrice": 34.99, "discount": "29%", "rating": 4.5, "description": "Padded protective sleeve sized for VoltMax laptops." }
+            ]
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {

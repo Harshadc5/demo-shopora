@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=15';
+import { demoScenarios } from './data/demo_scenarios.js?v=16';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (scenario.hideSections) hideSections(scenario.hideSections);      // Pattern 2 (2.1)
     if (scenario.cart) renderCart(scenario.cart);
+    if (scenario.cartRecommendations) renderCartRecommendations(scenario.cartRecommendations);  // Pattern 3 (3.4)
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
@@ -629,6 +630,61 @@ function renderSearchResults(config) {
     const template = document.querySelector('#productCardTemplate');
     if (!grid || !template) {
         console.error('[AIORA DEMO] #searchGrid or #productCardTemplate not found.');
+        return;
+    }
+    grid.innerHTML = '';
+    let adHocSpriteIndex = 0;
+    (config.tiles || []).forEach(entry => {
+        const real = products.find(p => p.id === entry.sku);
+        const item = real || entry;
+        const card = template.content.firstElementChild.cloneNode(true);
+
+        const numericMatch = item.id ? item.id.match(/-(\d+)$/) : null;
+        const spriteIndex = numericMatch ? Math.max(0, Number(numericMatch[1]) - 1) : (adHocSpriteIndex++ % 12);
+        const img = card.querySelector('.product-image');
+        img.classList.add(`sprite-${item.category || 'electronics'}`);
+        img.style.setProperty('--sprite-x', (spriteIndex % 5) * 25 + '%');
+        img.style.setProperty('--sprite-y', Math.floor(spriteIndex / 5) * 50 + '%');
+
+        card.dataset.productId = item.id || entry.sku;
+        card.dataset.brand = item.brand;
+        card.dataset.category = item.category || 'electronics';
+        card.dataset.sponsored = 'false';
+        card.dataset.availability = item.availability || 'in-stock';
+        card.querySelector('.discount-badge').textContent = `${item.discount} OFF`;
+        card.querySelector('.product-brand').textContent = item.brand;
+        card.querySelector('h3').textContent = item.name;
+        card.querySelector('.stars').textContent = `${(item.rating || 4.5).toFixed(1)} ★`;
+        card.querySelector('.rating-count').textContent = ratingCountFor(item.id || entry.sku).toLocaleString('en-IN');
+        card.querySelector('.product-meta').textContent = item.description || '';
+        card.querySelector('.price-stack strong').textContent = money(item.price);
+        card.querySelector('.price-stack del').textContent = money(item.oldPrice);
+        card.querySelector('.price-stack span').textContent = `Save ${money(item.oldPrice - item.price)}`;
+
+        grid.appendChild(card);
+    });
+}
+
+
+// =====================================================================
+// CART RECOMMENDATIONS — Pattern 3 (3.4). The real #recommendedGrid always
+// shows some mix of other products below the cart; this overrides it with
+// a fixed SKU list (same real-SKU-or-ad-hoc pattern as renderSearchResults)
+// and tags the always-real .cart-recommendations section with
+// data-module-type/data-parent-context so tag.js's new recommendations
+// module block can report which cart item the recs are supposedly for.
+// =====================================================================
+function renderCartRecommendations(config) {
+    const section = document.querySelector('.cart-recommendations');
+    if (section) {
+        section.dataset.moduleType = 'recommendations';
+        section.dataset.parentContext = config.parentContext;
+    }
+
+    const grid = document.querySelector('#recommendedGrid');
+    const template = document.querySelector('#productCardTemplate');
+    if (!grid || !template) {
+        console.error('[AIORA DEMO] #recommendedGrid or #productCardTemplate not found.');
         return;
     }
     grid.innerHTML = '';

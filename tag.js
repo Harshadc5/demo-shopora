@@ -720,8 +720,6 @@
         };
 
         var EXCLUDE_SURFACES = [
-            '#recommendedGrid',
-            '.cart-recommendations',
             '#suggestedGrid',
         ];
 
@@ -2132,6 +2130,21 @@
                 if (loyaltyOfferEl) {
                     var loyaltyMod = buildModule(loyaltyOfferEl, 'loyalty', position);
                     if (loyaltyMod && loyaltyMod.claim) { modules.push(loyaltyMod); position++; }
+                }
+                // Cart-page "Customers also bought" recommendations — real,
+                // always-on section, but only reported as a module when a demo
+                // scenario explicitly tags it with data-parent-context (same
+                // opt-in-via-signal-presence pattern as newsletter/loyalty above).
+                var recsEl = doc.querySelector('.cart-recommendations');
+                if (recsEl) {
+                    var recsMod = {
+                        module_id: recsEl.id || recsEl.getAttribute('data-module-id') || null,
+                        module_type: recsEl.getAttribute('data-module-type') || 'recommendations',
+                        position: position,
+                        in_grid: false,
+                        parent_context: recsEl.getAttribute('data-parent-context') || null
+                    };
+                    if (recsMod.parent_context) { modules.push(recsMod); position++; }
                 }
 
                 if (modules.length) result.modules = modules;
