@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=5';
+import { demoScenarios } from './data/demo_scenarios.js?v=6';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -54,10 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingAsync <= 0) window.__AIORA_DEMO_READY__ = true;
     }
 
+    if (scenario.hideSections) hideSections(scenario.hideSections);      // Pattern 2 (2.1)
     if (scenario.cart) renderCart(scenario.cart);
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
+    if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
     if (scenario.pdp) {
         pendingAsync++;
@@ -171,6 +173,29 @@ function forceIdentity(identity) {
     }
 }
 
+
+// =====================================================================
+// HIDE SECTIONS — removes real homepage sections that would otherwise
+// distract from a scenario's specific claim (e.g. 2.1's hero-vs-category
+// mismatch doesn't need the "popular categories" grid, today's deals
+// strip, or the two bottom promo banners competing for attention — and
+// removing them outright, rather than hiding with CSS, also keeps them
+// out of tag.js's extraction entirely).
+// =====================================================================
+function hideSections(selectors) {
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => el.remove());
+    });
+}
+
+// Retitles the real "Trending products" heading above #featuredGrid —
+// used by 2.1 so the featured-tiles section reads as the thing the hero
+// is claiming a discount on, instead of an unrelated "trending" framing.
+function renderFeaturedSectionHeading(text) {
+    const grid = document.querySelector('#featuredGrid');
+    const heading = grid && grid.closest('.section')?.querySelector('.section-heading h2');
+    if (heading) heading.textContent = text;
+}
 
 // =====================================================================
 // CART & SAVINGS — covers all five Pattern 1 scenarios. Mirrors the REAL

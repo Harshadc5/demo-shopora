@@ -184,7 +184,9 @@ export const demoScenarios = {
             "headline": "UP TO 35% OFF ELECTRONICS",
             "claim_scope": "electronics"
         },
-        "featuredTiles": ["el-1", "el-3", "el-4", "el-8", "el-2"]
+        "featuredTiles": ["el-1", "el-3", "el-4", "el-8", "el-2"],
+        "featuredSectionHeading": "Big Savings Day Offered- Products",
+        "hideSections": [".category-section", "#best-deals", ".promo-banner.promo-tech", ".promo-banner.promo-home"]
     },
     "trending-brand-dominance": {
         "target_page": "homepage",
