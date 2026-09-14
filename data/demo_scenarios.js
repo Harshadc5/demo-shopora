@@ -343,7 +343,10 @@ export const demoScenarios = {
         "categoryTiles": ["fa-2", "fa-1", "fa-3", "fa-4", "fa-5", "fa-6", "fa-7", "fa-8", "fa-9", "fa-10"],
         "tiles": {
             "bogoSkus": ["fa-1"]
-        }
+        },
+        "navOverrides": [
+            { "selector": ".cart-link", "destination": "./cart.html?demo=bogo-broken-cart" }
+        ]
     },
     // 4.2 step 2: cart shows 2x fa-1 at real full price ($18.99 × 2 =
     // $37.98) — no BOGO discount applied at all, despite the category
