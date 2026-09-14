@@ -515,5 +515,23 @@ export const demoScenarios = {
     "cart-lost": {
         "target_page": "category",
         "cartBadgeCount": 0
+    },
+    // Pattern 5 (5.4): homepage's wishlist icon says "3" (staged; real
+    // wishlist storage is empty in demo mode either way). navOverrides
+    // sends the click to the REAL destination real app.js already uses for
+    // the wishlist icon (category.html?wishlist=true, a filtered category
+    // view) — it's genuinely empty, so it shows the real #emptyResults
+    // "No products found" message, not anything wishlist- or identity-
+    // aware. No override needed on that page at all — 100% real behavior,
+    // same precedent as identity-lost (Pattern 5.1).
+    "wishlist-count-3": {
+        "target_page": "homepage",
+        "wishlistBadgeCount": 3,
+        "navOverrides": [
+            { "selector": ".wishlist-link", "destination": "./category.html?wishlist=true&demo=wishlist-empty" }
+        ]
+    },
+    "wishlist-empty": {
+        "target_page": "category"
     }
 };

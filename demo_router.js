@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=28';
+import { demoScenarios } from './data/demo_scenarios.js?v=29';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.disableAddToCart) disableAddToCart();   // Pattern 4 (4.5)
     if (scenario.loyaltyPrompt) renderLoyaltyPromptOverride(scenario.loyaltyPrompt);  // Pattern 5 (5.2)
     if (scenario.cartBadgeCount !== undefined) overrideCartBadge(scenario.cartBadgeCount);  // Pattern 5 (5.3)
+    if (scenario.wishlistBadgeCount !== undefined) overrideWishlistBadge(scenario.wishlistBadgeCount);  // Pattern 5 (5.4)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
@@ -316,6 +317,17 @@ function renderLoyaltyPromptOverride(config) {
 function overrideCartBadge(count) {
     document.querySelectorAll('[data-cart-count]').forEach(node => {
         node.dataset.cartCount = count;
+        node.textContent = String(count);
+    });
+}
+
+// Pattern 5 (5.4): same idea as overrideCartBadge above, but for the header
+// wishlist icon — homepage needs to show "3" (staged; real wishlist storage
+// is empty in demo mode) so clicking through to the real, genuinely empty
+// category.html?wishlist=true view is a visible contradiction.
+function overrideWishlistBadge(count) {
+    document.querySelectorAll('[data-wishlist-count]').forEach(node => {
+        node.dataset.wishlistCount = count;
         node.textContent = String(count);
     });
 }
