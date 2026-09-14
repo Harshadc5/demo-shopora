@@ -226,6 +226,11 @@ function renderPromoModule(promo) {
         console.error('[AIORA DEMO] .hero not found on this page.');
         return;
     }
+    // Wrapped in the same <section class="section"> every other homepage
+    // block uses, so it gets the real page's width/margin instead of
+    // guessing pixel values by hand.
+    const section = document.createElement('section');
+    section.className = 'section';
     const el = document.createElement('div');
     el.className = 'promo-banner';
     el.dataset.moduleType = 'promo';
@@ -233,9 +238,15 @@ function renderPromoModule(promo) {
     if (promo.claim_amount != null) el.dataset.claimAmount = promo.claim_amount;
     if (promo.claim_code) el.dataset.claimCode = promo.claim_code;
     if (promo.claim_min_spend != null) el.dataset.claimMinSpend = promo.claim_min_spend;
-    el.style.cssText = 'max-width:1400px;margin:1.5rem auto 0;padding:1rem 1.5rem;background:#fff7e6;border:1px solid #f5c518;border-radius:12px;font-weight:700;';
+    // .promo-banner's real CSS (min-height:250px, inline-flex sized-to-
+    // content) is built for the hero-sized promo-tech/promo-home banners —
+    // override those for a slim single-line strip, but keep its white text
+    // color (already correct against a dark background) and use the site's
+    // real navy token instead of an off-theme color.
+    el.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;min-height:auto;box-sizing:border-box;padding:1rem 1.5rem;background:var(--navy,#10243e);border-radius:var(--radius,12px);font-weight:700;font-size:0.95rem;text-align:center;';
     el.textContent = promo.text;
-    hero.insertAdjacentElement('afterend', el);
+    section.appendChild(el);
+    hero.insertAdjacentElement('afterend', section);
 }
 
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card
