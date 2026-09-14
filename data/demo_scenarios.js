@@ -360,6 +360,21 @@ export const demoScenarios = {
             "shipping_label": "FREE delivery"
         }
     },
+    // 4.3: checkout has 1x OakLine Coffee Table (ho-1, $199.99 — well
+    // above the real, always-on "Free delivery above $35" header claim).
+    // Yet checkout charges a $9.99 "Oversized shipping fee" anyway — the
+    // header promise and the actual checkout charge directly contradict
+    // each other. No tag.js changes needed: t6.free_shipping_claim_threshold
+    // is already real/always-on, and t2.delivery_cost already reads the
+    // real #checkoutDelivery element.
+    "shipping-oversized": {
+        "target_page": "checkout",
+        "checkout": {
+            "items": [{ "sku": "ho-1", "qty": 1 }],
+            "shippingFee": 9.99,
+            "shippingLabel": "Oversized shipping fee"
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {

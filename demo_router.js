@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=20';
+import { demoScenarios } from './data/demo_scenarios.js?v=21';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('storage', () => renderCart(scenario.cart));
     }
     if (scenario.cartRecommendations) renderCartRecommendations(scenario.cartRecommendations);  // Pattern 3 (3.4)
+    if (scenario.checkout) renderCheckoutOverride(scenario.checkout);  // Pattern 4 (4.3)
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
@@ -389,6 +390,59 @@ function renderCart(cart) {
             }
         }
     }
+}
+
+
+// =====================================================================
+// CHECKOUT OVERRIDE — Pattern 4 (4.3). checkout.html's real renderCheckout()
+// (app.js) reads from the real, persisted cart, same problem renderCart()
+// solves on cart.html — this replaces #checkoutItems/#checkoutSubtotal/
+// #checkoutDelivery/#checkoutTotal directly with fixed scenario data,
+// including an overridden delivery fee + its visible row label (real
+// element/selector — tag.js's existing FIELD_SEL.checkoutDelivery already
+// reads #checkoutDelivery into t2.delivery_cost, no tag.js change needed).
+// =====================================================================
+function renderCheckoutOverride(checkout) {
+    const itemsEl = document.querySelector('#checkoutItems');
+    if (!itemsEl) {
+        console.error('[AIORA DEMO] #checkoutItems not found on this page.');
+        return;
+    }
+
+    const resolvedItems = (checkout.items || []).map(({ sku, qty }) => {
+        const product = products.find(p => p.id === sku);
+        if (!product) {
+            console.error(`[AIORA DEMO] Unknown SKU "${sku}" — check products.js`);
+            return { sku, qty, name: sku, lineTotal: 0 };
+        }
+        return { sku, qty, name: product.name, lineTotal: +(product.price * qty).toFixed(2) };
+    });
+
+    itemsEl.innerHTML = resolvedItems.length ? resolvedItems.map(item => `
+    <div class="mini-item" data-mini-id="${item.sku}">
+      <div class="product-image"></div>
+      <div><p>${item.name}</p><small>Qty ${item.qty}</small></div>
+      <strong>${money(item.lineTotal)}</strong>
+    </div>
+  `).join('') : '<div class="cart-empty"><p>Your cart is empty.</p><a class="button button-primary" href="./category.html">Shop products</a></div>';
+
+    const subtotal = +resolvedItems.reduce((sum, i) => sum + i.lineTotal, 0).toFixed(2);
+    const set = (id, text) => { const el = document.querySelector(id); if (el) el.textContent = text; };
+    set('#checkoutSubtotal', money(subtotal));
+
+    const shippingFee = checkout.shippingFee || 0;
+    const deliveryEl = document.querySelector('#checkoutDelivery');
+    if (deliveryEl) {
+        deliveryEl.textContent = shippingFee ? money(shippingFee) : 'FREE';
+        var row = deliveryEl.closest('.summary-row');
+        var labelEl = row && row.querySelector('span');
+        if (labelEl && checkout.shippingLabel) labelEl.textContent = checkout.shippingLabel;
+    }
+
+    set('#checkoutTotal', money(+(subtotal + shippingFee).toFixed(2)));
+
+    const placeOrderBtn = document.querySelector('#placeOrderButton');
+    if (placeOrderBtn) placeOrderBtn.disabled = !resolvedItems.length;
 }
 
 function renderSavingsBreakdown(components) {
