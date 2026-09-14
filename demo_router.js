@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=17';
+import { demoScenarios } from './data/demo_scenarios.js?v=18';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -264,14 +264,14 @@ function renderCart(cart) {
     }
 
     // products.js uses `id`, not `sku`.
-    const resolvedItems = cart.items.map(({ sku, qty }) => {
+    const resolvedItems = cart.items.map(({ sku, qty, note }) => {
         const product = products.find(p => p.id === sku);
         if (!product) {
             console.error(`[AIORA DEMO] Unknown SKU "${sku}" — check products.js`);
-            return { sku, qty, name: sku, price: 0, lineTotal: 0 };
+            return { sku, qty, note, name: sku, price: 0, lineTotal: 0 };
         }
         return {
-            sku, qty,
+            sku, qty, note,
             name: product.name,
             price: product.price,
             category: product.category,
@@ -305,6 +305,7 @@ function renderCart(cart) {
         <h3>${item.name}</h3>
         <p class="cart-item-meta">${item.description || ''}</p>
         <p class="cart-item-meta" data-availability="in-stock"><b>In stock</b> · FREE returns</p>
+        ${item.note ? `<p class="cart-item-meta" style="color:#b45309;">${item.note}</p>` : ''}
         <div class="cart-item-actions">
           <div class="quantity-control"><button disabled>−</button><span>${item.qty}</span><button disabled>+</button></div>
         </div>
@@ -786,9 +787,27 @@ function applyTileOverrides(tiles) {
         }
     });
     (tiles.bogoSkus || []).forEach(sku => {
-        // data-bogo: not read by tag.js today, kept for forward compatibility.
         const card = document.querySelector(`[data-product-id="${sku}"]`);
-        if (card) card.dataset.bogo = 'true';
+        if (!card) return;
+        card.dataset.bogo = 'true';
+        // Visible "BOGO" badge — '.product-label' is one of the classes
+        // tag.js's badges-array selector (FIELD_SEL.generalBadges) already
+        // reads, grouped with the discount badge so the row's
+        // justify-content:space-between doesn't push them apart (same fix
+        // used for the Sponsored badge above).
+        const badgeRow = card.querySelector('.product-badge-row');
+        const discountBadge = badgeRow && badgeRow.querySelector('.discount-badge');
+        if (badgeRow && discountBadge && !badgeRow.querySelector('.product-label')) {
+            const wrapper = document.createElement('span');
+            wrapper.style.cssText = 'display:flex;align-items:center;gap:0.4rem;';
+            const label = document.createElement('span');
+            label.className = 'product-label';
+            label.textContent = 'BOGO: Buy One Get One Free';
+            label.style.cssText = 'background:#e8f5e9;color:#1b5e20;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.02em;padding:2px 6px;border-radius:4px;';
+            discountBadge.parentNode.insertBefore(wrapper, discountBadge);
+            wrapper.appendChild(label);
+            wrapper.appendChild(discountBadge);
+        }
     });
     // 4.1: overrides a tile's visible discount badge text (e.g. "17% OFF" ->
     // "25% OFF") and, optionally, its displayed price — so the category tile

@@ -336,6 +336,26 @@ export const demoScenarios = {
         "target_page": "category",
         "categoryTiles": ["fa-1", "fa-2", "fa-4", "fa-5", "fa-7", "fa-3", "fa-6", "fa-8", "fa-9", "fa-10"]
     },
+    // 4.2 step 1: fashion category, real grid untouched except fa-1 (Luna
+    // Tee) gets a visible "BOGO: Buy One Get One Free" badge + data-bogo.
+    "bogo-promise": {
+        "target_page": "category",
+        "tiles": {
+            "bogoSkus": ["fa-1"]
+        }
+    },
+    // 4.2 step 2: cart shows 2x fa-1 at real full price ($18.99 × 2 =
+    // $37.98) — no BOGO discount applied at all, despite the category
+    // page's badge promising one. The per-item note is visual-only (not a
+    // tag.js-read field); the actual coordination-failure proof is purely
+    // the badge-on-category vs full-price-in-cart mismatch.
+    "bogo-broken-cart": {
+        "target_page": "cart",
+        "cart": {
+            "items": [{ "sku": "fa-1", "qty": 2, "note": "BOGO not applicable to sale items." }],
+            "shipping_label": "FREE delivery"
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {
