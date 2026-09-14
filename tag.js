@@ -677,7 +677,7 @@
             cartTax: ['.summary-tax', '#summaryTax', '[data-automation-id="summaryTax"]'],
             cartPromotions: ['.cart-discount', '.promo-applied', '[data-automation-id="appliedPromotion"]', '#promoRow'],
             cartShippingThreshold: ['.shipping-threshold', '#shippingProgress', '.shipping-progress'],
-            cartLoyalty: ['.loyalty-discount', '[data-automation-id="loyaltyDiscount"]'],
+            cartLoyalty: ['.loyalty-discount', '[data-automation-id="loyaltyDiscount"]', '#plusMemberRow'],
             // --- NEW TIER 2 ADDITIONS --- w.r.t Canonical Signal Schema
             appliedDiscountConstructs: ['.applied-discount-type', '[data-discount-type]', '.discount-construct'],
             promoInput: ['input[name*="discount"]', 'input[name*="coupon"]', '#promoCode', '.promo-input', '#promoInput'],
@@ -1496,6 +1496,12 @@
             if (promoEls.length > 0) {
                 result.promotions = [];
                 promoEls.forEach(function (el) {
+                    // #promoRow is always in the DOM, even with no promo
+                    // applied — real app.js sets style.display='none' on it
+                    // in that case (still visible in markup either way), so
+                    // without this check every cart visit with no active
+                    // promo reports a bogus {name:"", amount:"-$0.00"} entry.
+                    if (el.style && el.style.display === 'none') return;
                     var promo = {};
                     var nameEl = el.querySelector('.promo-name, strong, p');
                     var amtEl = el.querySelector('.promo-amount, .discount-amount') || el.querySelector('span:not(.promo-name)');
@@ -1512,7 +1518,9 @@
 
             // 4. Loyalty discount line
             var loyaltyEl = firstMatch(doc, FIELD_SEL.cartLoyalty);
-            if (loyaltyEl) result.loyalty_discount = textOf(loyaltyEl, 60);
+            if (loyaltyEl && !(loyaltyEl.style && loyaltyEl.style.display === 'none')) {
+                result.loyalty_discount = textOf(loyaltyEl, 60);
+            }
 
             // 5. Tax line
             var taxEl = firstMatch(doc, FIELD_SEL.cartTax);
@@ -2096,8 +2104,8 @@
                 t5.welcome_banner = !!welcomeBanner; // Converts to boolean true/false
 
                 // 6. Active loyalty discount in cart (boolean)
-                var loyaltyDiscountEl = doc.querySelector('.summary-card .loyalty-discount, .checkout-summary .loyalty-discount, .cart-summary .loyalty-discount, .order-total .member-discount, #coPlusMemberRow');
-                t5.active_loyalty_discount = !!loyaltyDiscountEl;
+                var loyaltyDiscountEl = doc.querySelector('.summary-card .loyalty-discount, .checkout-summary .loyalty-discount, .cart-summary .loyalty-discount, .order-total .member-discount, #coPlusMemberRow, #plusMemberRow');
+                t5.active_loyalty_discount = !!(loyaltyDiscountEl && !(loyaltyDiscountEl.style && loyaltyDiscountEl.style.display === 'none'));
 
 
                 return t5;
