@@ -653,13 +653,20 @@ function applyTileOverrides(tiles) {
         // Visible "Sponsored" badge — '.sponsored-label' is also one of the
         // classes tag.js's own sponsored selector checks (redundant with the
         // data attribute), and it's what lets this be verified visually.
+        // Wrapped together with the discount badge in one flex item so the
+        // row's justify-content:space-between doesn't push them apart.
         const badgeRow = card.querySelector('.product-badge-row');
-        if (badgeRow && !badgeRow.querySelector('.sponsored-label')) {
+        const discountBadge = badgeRow && badgeRow.querySelector('.discount-badge');
+        if (badgeRow && discountBadge && !badgeRow.querySelector('.sponsored-label')) {
+            const wrapper = document.createElement('span');
+            wrapper.style.cssText = 'display:flex;align-items:center;gap:0.4rem;';
             const label = document.createElement('span');
             label.className = 'sponsored-label';
             label.textContent = 'Sponsored';
-            label.style.cssText = 'background:#fff3cd;color:#856404;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 6px;border-radius:4px;margin-left:6px;';
-            badgeRow.insertBefore(label, badgeRow.firstChild);
+            label.style.cssText = 'background:#fff3cd;color:#856404;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 6px;border-radius:4px;';
+            discountBadge.parentNode.insertBefore(wrapper, discountBadge);
+            wrapper.appendChild(label);
+            wrapper.appendChild(discountBadge);
         }
     });
     (tiles.bogoSkus || []).forEach(sku => {
