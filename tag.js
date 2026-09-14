@@ -700,6 +700,7 @@
             checkoutDelivery: ['#checkoutDelivery', '[data-automation-id="pickupTotal"]'],
             checkoutTax: ['#checkoutTax', '[data-automation-id="salesTaxTotal"]'],
             checkoutOrderButton: ['#placeOrderButton', '.place-order', '[data-automation-id="checkoutButton"]'],
+            checkoutLoyalty: ['#coPlusMemberRow', '[data-automation-id="loyaltyDiscount"]'],
             checkoutItemQuantity: ['small', '[class*="qty"]'],  // <--- ADDED THIS LINE
 
 
@@ -1610,6 +1611,11 @@
                 var parsedTax = parsePrice(tax);
                 if (parsedTax) result.tax_numeric = parsedTax.amount;
             }
+            // Loyalty/member discount line (e.g. real app.js's "Shopora Plus
+            // member 5% off" row on checkout) — mirrors cart's existing
+            // loyalty_discount field, which this page never had.
+            var checkoutLoyaltyEl = firstMatch(doc, FIELD_SEL.checkoutLoyalty);
+            if (checkoutLoyaltyEl) result.loyalty_discount = textOf(checkoutLoyaltyEl, 60);
 
             result.order_button_shown = !!firstMatch(doc, FIELD_SEL.checkoutOrderButton);
 
