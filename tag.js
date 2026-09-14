@@ -1433,11 +1433,17 @@
 
             // --- NEW TIER 2 EXTRACTION LOGIC --- w.r.t Canonical Signal Schema
 
-            // 1. Promo field state (active, disabled, hidden, or not-present)
+            // 1. Promo field state (active, disabled, hidden, not-present, or
+            // accepted/rejected once a code has actually been applied) —
+            // read [data-promo-state] off the input or its wrapper when
+            // present, defaulting to the original 'active' assumption
+            // otherwise (Shopora never hides/disables the field itself).
             var promoInput = firstMatch(doc, FIELD_SEL.promoInput);
             if (promoInput) {
-                // Just assume 'active' if it exists. Shopora never hides/disables it.
-                result.promo_field_state = 'active';
+                var promoStateEl = promoInput.closest('[data-promo-state]');
+                result.promo_field_state = promoStateEl ? promoStateEl.getAttribute('data-promo-state') : 'active';
+                var appliedCodeEl = promoInput.closest('[data-applied-code]');
+                if (appliedCodeEl) result.promo_applied_code = appliedCodeEl.getAttribute('data-applied-code');
             } else {
                 result.promo_field_state = 'not-present';
             }

@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=21';
+import { demoScenarios } from './data/demo_scenarios.js?v=22';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.categoryTiles) renderCategoryTiles(scenario.categoryTiles);  // Pattern 3 (3.2)
     if (scenario.searchResults) renderSearchResults(scenario.searchResults);  // Pattern 3 (3.3)
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
+    if (scenario.promoModule) renderPromoModule(scenario.promoModule);   // Pattern 4 (4.4/4.5)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
@@ -208,6 +209,33 @@ function renderFeaturedSectionHeading(text) {
     const grid = document.querySelector('#featuredGrid');
     const heading = grid && grid.closest('.section')?.querySelector('.section-heading h2');
     if (heading) heading.textContent = text;
+}
+
+// =====================================================================
+// PROMO MODULE — Pattern 4 (4.4/4.5). Injects a new, demo-only promo
+// banner on the homepage right after the hero (no real element like this
+// exists in Shopora's markup). Class "promo-banner" is exactly what
+// tag.js's existing FIELD_SEL.promoBanner selector already scans, and
+// buildModule()/extractClaim() already read data-module-type/data-claim-*
+// off any element — data-module-type="promo" here just overrides
+// buildModule's default "banner" type. No tag.js change needed.
+// =====================================================================
+function renderPromoModule(promo) {
+    const hero = document.querySelector('.hero');
+    if (!hero) {
+        console.error('[AIORA DEMO] .hero not found on this page.');
+        return;
+    }
+    const el = document.createElement('div');
+    el.className = 'promo-banner';
+    el.dataset.moduleType = 'promo';
+    if (promo.claim_percent != null) el.dataset.claimPercent = promo.claim_percent;
+    if (promo.claim_amount != null) el.dataset.claimAmount = promo.claim_amount;
+    if (promo.claim_code) el.dataset.claimCode = promo.claim_code;
+    if (promo.claim_min_spend != null) el.dataset.claimMinSpend = promo.claim_min_spend;
+    el.style.cssText = 'max-width:1400px;margin:1.5rem auto 0;padding:1rem 1.5rem;background:#fff7e6;border:1px solid #f5c518;border-radius:12px;font-weight:700;';
+    el.textContent = promo.text;
+    hero.insertAdjacentElement('afterend', el);
 }
 
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card
@@ -376,17 +404,28 @@ function renderCart(cart) {
 
     renderSavingsBreakdown(cart.savings_breakdown || []);
 
-    // Promo field state — data-promo-state/applied-code/inline-reason are not
-    // read by tag.js today, kept for forward compatibility with the intended
-    // contract described in Pdp Css Contract.md.
+    // Promo field state — data-promo-state/applied-code read by tag.js's
+    // extractCartState() (fixed for 4.4/4.5); the reason text below reuses
+    // tag.js's EXISTING .promo-error selector (FIELD_SEL.promoInlineReason),
+    // so no tag.js change is needed for that part.
     if (cart.promo) {
         const promoInput = document.querySelector('#promoInput, .promo-input');
         if (promoInput) {
             const promoField = promoInput.closest('.promo-field') || promoInput.parentElement;
             if (promoField) {
                 promoField.dataset.promoState = cart.promo.state;
-                if (cart.promo.code) promoField.dataset.appliedCode = cart.promo.code;
-                if (cart.promo.reason) promoField.dataset.inlineReason = cart.promo.reason;
+                if (cart.promo.code) { promoField.dataset.appliedCode = cart.promo.code; promoInput.value = cart.promo.code; }
+                if (cart.promo.reason) {
+                    promoField.dataset.inlineReason = cart.promo.reason;
+                    let msgEl = promoField.querySelector('.promo-error');
+                    if (!msgEl) {
+                        msgEl = document.createElement('small');
+                        msgEl.className = 'promo-error';
+                        msgEl.style.cssText = 'flex-basis:100%;color:#b42318;';
+                        promoField.appendChild(msgEl);
+                    }
+                    msgEl.textContent = cart.promo.reason;
+                }
             }
         }
     }

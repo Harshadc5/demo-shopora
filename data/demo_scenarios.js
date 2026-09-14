@@ -375,6 +375,32 @@ export const demoScenarios = {
             "shippingLabel": "Oversized shipping fee"
         }
     },
+    // 4.4 step 1: homepage promo module (demo-only — no real element like
+    // this exists) claiming WELCOME10 gets new customers 10% off.
+    "welcome-code-promise": {
+        "target_page": "homepage",
+        "promoModule": {
+            "text": "NEW HERE? Use code WELCOME10 for 10% off your first order.",
+            "claim_percent": 10,
+            "claim_code": "WELCOME10"
+        }
+    },
+    // 4.4 step 2: guest cart applies WELCOME10 — the exact code the
+    // homepage just promised works for new customers — and it's rejected
+    // anyway. cart_state.promo_field_state='rejected' vs the homepage's
+    // ClaimSignal for the same code is the coordination failure.
+    "welcome-code-rejected": {
+        "target_page": "cart",
+        "cart": {
+            "items": [{ "sku": "el-2", "qty": 1 }],
+            "shipping_label": "FREE delivery",
+            "promo": {
+                "state": "rejected",
+                "code": "WELCOME10",
+                "reason": "Invalid code. Please try again."
+            }
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {
