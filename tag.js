@@ -2078,8 +2078,9 @@
                 t5.welcome_banner = !!welcomeBanner; // Converts to boolean true/false
 
                 // 6. Active loyalty discount in cart (boolean)
-                var loyaltyDiscountEl = doc.querySelector('.summary-card .loyalty-discount, .checkout-summary .loyalty-discount, .cart-summary .loyalty-discount, .order-total .member-discount');
+                var loyaltyDiscountEl = doc.querySelector('.summary-card .loyalty-discount, .checkout-summary .loyalty-discount, .cart-summary .loyalty-discount, .order-total .member-discount, #coPlusMemberRow');
                 t5.active_loyalty_discount = !!loyaltyDiscountEl;
+
 
                 return t5;
             } catch (e) {
