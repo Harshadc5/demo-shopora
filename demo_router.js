@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=29';
+import { demoScenarios } from './data/demo_scenarios.js?v=30';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -624,13 +624,19 @@ function renderCheckoutOverride(checkout) {
 function renderSavingsBreakdown(components) {
     document.querySelectorAll('[data-demo-savings-row]').forEach(el => el.remove());
 
-    const hasOwnLoyaltyLine = components.some(c => c.type === 'loyalty');
+    // Whenever a demo cart override is active, it's authoritative over the
+    // cart summary — always strip the real Shopora Plus member-discount row
+    // app.js may have auto-injected (#plusMemberRow/#coPlusMemberRow),
+    // regardless of whether this override includes its own loyalty line.
+    // Pattern 5.5 needs NO loyalty component at all (member identified, but
+    // pricing not applied) yet still needs the real row gone — the old
+    // `&& hasOwnLoyaltyLine` guard would have left it sitting there. Removed
+    // outright rather than hidden — display:none left it in the DOM as a
+    // genuinely-hidden discount, which tag.js's hidden-content detector
+    // correctly flags as suspicious (a real discount hidden from the
+    // customer).
     const autoPlusRow = document.querySelector('#plusMemberRow, #coPlusMemberRow');
-    // Remove it outright rather than hiding it — display:none left it in the
-    // DOM as a genuinely-hidden discount, which tag.js's hidden-content
-    // detector correctly flags as suspicious (a real discount hidden from
-    // the customer).
-    if (autoPlusRow && hasOwnLoyaltyLine) autoPlusRow.remove();
+    if (autoPlusRow) autoPlusRow.remove();
 
     const totalRow = document.querySelector('#summaryTotal')?.closest('.summary-row');
     if (!totalRow) {

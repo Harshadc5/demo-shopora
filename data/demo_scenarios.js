@@ -533,5 +533,22 @@ export const demoScenarios = {
     },
     "wishlist-empty": {
         "target_page": "category"
+    },
+    // Pattern 5.5: member identified (header chip + real Shopora Plus
+    // loyalty rail, both 100% real app.js behavior from the real
+    // ?identity=logged-in&member_tier=plus params — including the real
+    // "450 points / 50 from Gold" loyalty chip), but member PRICING isn't
+    // applied. Real app.js normally auto-applies a 5% Plus discount on
+    // cart.html too (#plusMemberRow) — this override's renderCart() call
+    // (via the renderSavingsBreakdown fix) strips that real row since no
+    // savings_breakdown is given, leaving el-2 at its plain $89.99 catalog
+    // price with no discount line at all.
+    "member-pricing-missing": {
+        "target_page": "cart",
+        "cart": {
+            "items": [
+                { "sku": "el-2", "qty": 1 }
+            ]
+        }
     }
 };
