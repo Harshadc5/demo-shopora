@@ -1146,6 +1146,16 @@
             var parsedTotal = parsePrice(rawTotal);
             if (parsedTotal) li.line_total = parsedTotal.amount;
 
+            // Per-line-item inline reason — a retailer-shown explanation for
+            // why an expected discount didn't apply (e.g. "BOGO not
+            // applicable to sale items."), distinct from the cart-level
+            // promo_field_inline_reason which only covers the promo code box.
+            var reasonEl = item.querySelector('.cart-item-note');
+            if (reasonEl) {
+                var reasonText = textOf(reasonEl, 80);
+                if (reasonText) li.inline_reason = reasonText;
+            }
+
             return li;
         }
 

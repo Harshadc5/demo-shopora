@@ -305,7 +305,7 @@ function renderCart(cart) {
         <h3>${item.name}</h3>
         <p class="cart-item-meta">${item.description || ''}</p>
         <p class="cart-item-meta" data-availability="in-stock"><b>In stock</b> · FREE returns</p>
-        ${item.note ? `<p class="cart-item-meta" style="color:#b45309;">${item.note}</p>` : ''}
+        ${item.note ? `<p class="cart-item-meta cart-item-note" style="color:#b45309;">${item.note}</p>` : ''}
         <div class="cart-item-actions">
           <div class="quantity-control"><button disabled>−</button><span>${item.qty}</span><button disabled>+</button></div>
         </div>
