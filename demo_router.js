@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=11';
+import { demoScenarios } from './data/demo_scenarios.js?v=12';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
+    if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
     if (scenario.pdp) {
         pendingAsync++;
@@ -195,6 +196,29 @@ function renderFeaturedSectionHeading(text) {
     const grid = document.querySelector('#featuredGrid');
     const heading = grid && grid.closest('.section')?.querySelector('.section-heading h2');
     if (heading) heading.textContent = text;
+}
+
+// Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card
+// (#heroDealName/#heroDealPrice/#heroDealOld, populated by app.js on every
+// homepage visit) to show a product at its full catalog price with the
+// strikethrough/old-price cleared — i.e. no actual discount — while the
+// real countdown timer elsewhere on the page keeps ticking down unchanged.
+function renderDealOfDayOverride(sku) {
+    const product = products.find(p => p.id === sku);
+    if (!product) {
+        console.error(`[AIORA DEMO] Unknown SKU "${sku}" for dealOfDayOverride — check products.js`);
+        return;
+    }
+    const card = document.querySelector('.hero-deal-card');
+    if (card) card.dataset.productId = product.id;
+    const nameEl = document.querySelector('#heroDealName');
+    if (nameEl) nameEl.textContent = product.name;
+    const priceEl = document.querySelector('#heroDealPrice');
+    // Full catalog (undiscounted) price — product.oldPrice — shown as the
+    // CURRENT price, not product.price (which is the real, discounted one).
+    if (priceEl) priceEl.textContent = money(product.oldPrice);
+    const oldEl = document.querySelector('#heroDealOld');
+    if (oldEl) oldEl.textContent = ''; // no strikethrough price shown = no discount
 }
 
 // =====================================================================

@@ -2130,6 +2130,32 @@
                     result.countdown_present = false;
                 }
 
+                // 4b. Homepage "Deal of the day" spotlight product — a single featured
+                // item distinct from the regular grid/carousel tiles, so it isn't picked
+                // up by the generic card scanner (no .product-card class, custom IDs).
+                // Captured here, right next to the countdown, so a countdown implying
+                // urgency and a spotlight product with no actual discount are directly
+                // comparable in the same payload.
+                var dealNameEl = doc.querySelector('#heroDealName');
+                if (dealNameEl) {
+                    var dealName = textOf(dealNameEl, 80);
+                    if (dealName) {
+                        var deal = { name: dealName };
+                        var dealCard = dealNameEl.closest('.hero-deal-card') || dealNameEl.parentElement;
+                        var dealSku = dealCard && (dealCard.getAttribute('data-product-id') || dealCard.getAttribute('data-sku'));
+                        if (dealSku) deal.sku = dealSku;
+                        var dealPriceEl = doc.querySelector('#heroDealPrice');
+                        var parsedDealPrice = parsePrice(textOf(dealPriceEl, 20));
+                        if (parsedDealPrice) { deal.price = parsedDealPrice.amount; if (parsedDealPrice.currency) deal.currency = parsedDealPrice.currency; }
+                        var dealOldEl = doc.querySelector('#heroDealOld');
+                        var dealOldText = dealOldEl ? textOf(dealOldEl, 20) : null;
+                        var parsedDealOld = dealOldText ? parsePrice(dealOldText) : null;
+                        deal.has_discount = !!(parsedDealOld && parsedDealPrice && parsedDealOld.amount !== parsedDealPrice.amount);
+                        if (deal.has_discount) deal.old_price = parsedDealOld.amount;
+                        result.deal_of_day = deal;
+                    }
+                }
+
                 // 5. Advertised discount constructs — codes attached to any claim found above.
                 var advertisedCodes = [];
                 for (var m = 0; m < modules.length; m++) {

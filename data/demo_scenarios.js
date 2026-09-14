@@ -229,6 +229,15 @@ export const demoScenarios = {
             ]
         }
     },
+    // 2.4: the homepage's real "Deal of the day" spotlight (ho-5, Belfry
+    // Bath Towel Set) shows its full undiscounted price with no
+    // strikethrough — no deal at all — while the real countdown timer
+    // elsewhere on the page keeps ticking down unchanged, implying urgency
+    // around a deal that doesn't exist.
+    "urgency-no-deal": {
+        "target_page": "homepage",
+        "dealOfDayOverride": "ho-5"
+    },
     // 2.3: category-page banner claims "SAVE UP TO 50%" while the real
     // catalog's electronics discounts only range 17%-29% — no tile
     // override needed, the real category grid already tops out at 29%.
