@@ -263,9 +263,19 @@ function renderPromoModule(promo) {
 // exact prices to hit a specific total ($214.99) — a real "Add to cart"
 // click wouldn't change what the cart page shows (it's fully overridden
 // regardless), but would be visually confusing/misleading during a live
-// walkthrough, so disable every add-to-cart control on the page outright.
+// walkthrough. Intercepts the click instead of setting `disabled` — tag.js's
+// own extractAvailability() treats a disabled add-to-cart button as an
+// out-of-stock signal, which would falsely mark every real, in-stock tile
+// on the page as out-of-stock in the payload. Blocking the click in the
+// capturing phase (same pattern as attachClickThrough/attachDemoNavRouting)
+// gets the same "nothing happens" result without corrupting that signal.
 function disableAddToCart() {
-    document.querySelectorAll('.add-to-cart, #heroDealAdd').forEach(btn => { btn.disabled = true; });
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-to-cart, #heroDealAdd');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true);
 }
 
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card
