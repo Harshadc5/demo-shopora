@@ -835,10 +835,15 @@
             if (card.querySelector('[data-availability="low-stock"], .low-stock, [data-stock="low"]')) return 'low-stock';
             var explicitAvail = card.querySelector('[data-availability]');
             if (explicitAvail) return explicitAvail.getAttribute('data-availability');
+            if (/only \d+ left|low stock|hurry/i.test(card.textContent)) return 'low-stock';
+            // Real cart-item markup shows "In stock" as plain visible text,
+            // no data-availability attribute — check that before falling
+            // back to an add-to-cart button, which cart items never have
+            // (they show quantity/remove controls instead, not "Add to cart").
+            if (/\bin stock\b/i.test(card.textContent)) return 'in-stock';
             var btn = firstMatch(card, FIELD_SEL.addToCart);
             if (!btn) return 'unknown';
             if (btn.disabled) return 'out-of-stock';
-            if (/only \d+ left|low stock|hurry/i.test(card.textContent)) return 'low-stock';
             return 'in-stock';
         }
 
