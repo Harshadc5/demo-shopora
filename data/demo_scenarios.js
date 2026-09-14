@@ -271,6 +271,17 @@ export const demoScenarios = {
             ]
         }
     },
+    // 3.2: electronics category grid where the top 3 (sponsored) positions
+    // AND 1 of the 8 organic positions are all PulseTune — 4 of 11 shown
+    // (36% raw, ~43% when sponsored slots are weighted 2x). Real catalog
+    // order is overridden via categoryTiles to force this exact layout.
+    "pulsetune-dominance": {
+        "target_page": "category",
+        "categoryTiles": ["el-2", "el-3", "el-5", "el-8", "el-1", "el-6", "el-4", "el-7", "el-9", "el-11", "el-12"],
+        "tiles": {
+            "sponsoredSkus": ["el-2", "el-3", "el-5"]
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {

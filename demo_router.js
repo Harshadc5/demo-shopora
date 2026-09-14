@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=13';
+import { demoScenarios } from './data/demo_scenarios.js?v=14';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
+    if (scenario.categoryTiles) renderCategoryTiles(scenario.categoryTiles);  // Pattern 3 (3.2)
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
@@ -563,6 +564,55 @@ function renderFeaturedTiles(skus) {
 
 
 // =====================================================================
+// CATEGORY TILES — Pattern 3 (3.2+). The real category.html filters/sorts
+// #catalogGrid dynamically (renderCatalog() in app.js) — this wipes and
+// rebuilds it with a fixed SKU order, same sprite/card logic as
+// renderFeaturedTiles(), so brand-concentration scenarios are deterministic
+// regardless of the real catalog's natural sort.
+// =====================================================================
+function renderCategoryTiles(skus) {
+    const grid = document.querySelector('#catalogGrid');
+    const template = document.querySelector('#productCardTemplate');
+    if (!grid || !template) {
+        console.error('[AIORA DEMO] #catalogGrid or #productCardTemplate not found.');
+        return;
+    }
+    grid.innerHTML = '';
+    skus.forEach(sku => {
+        const product = products.find(p => p.id === sku);
+        if (!product) {
+            console.error(`[AIORA DEMO] Unknown SKU "${sku}" — check products.js`);
+            return;
+        }
+        const card = template.content.firstElementChild.cloneNode(true);
+
+        const spriteIndex = Math.max(0, Number(product.id.split('-')[1]) - 1);
+        const img = card.querySelector('.product-image');
+        img.classList.add(`sprite-${product.category}`);
+        img.style.setProperty('--sprite-x', (spriteIndex % 5) * 25 + '%');
+        img.style.setProperty('--sprite-y', Math.floor(spriteIndex / 5) * 50 + '%');
+
+        card.dataset.productId = product.id;
+        card.dataset.brand = product.name.split(' ')[0];
+        card.dataset.category = product.category;
+        card.dataset.sponsored = 'false';
+        card.dataset.availability = product.availability || 'in-stock';
+        card.querySelector('.discount-badge').textContent = `${product.discount} OFF`;
+        card.querySelector('.product-brand').textContent = product.brand;
+        card.querySelector('h3').textContent = product.name;
+        card.querySelector('.stars').textContent = `${product.rating.toFixed(1)} ★`;
+        card.querySelector('.rating-count').textContent = ratingCountFor(product.id).toLocaleString('en-IN');
+        card.querySelector('.product-meta').textContent = product.description;
+        card.querySelector('.price-stack strong').textContent = money(product.price);
+        card.querySelector('.price-stack del').textContent = money(product.oldPrice);
+        card.querySelector('.price-stack span').textContent = `Save ${money(product.oldPrice - product.price)}`;
+
+        grid.appendChild(card);
+    });
+}
+
+
+// =====================================================================
 // CLAIMS — generic claim-attribute setter for Pattern 2 scenarios that
 // target an arbitrary existing module by ID (2.1 uses renderHeroOverride()
 // above instead, since it also needs to swap headline text and tile SKUs).
@@ -598,7 +648,19 @@ function applyTileOverrides(tiles) {
     });
     (tiles.sponsoredSkus || []).forEach(sku => {
         const card = document.querySelector(`[data-product-id="${sku}"]`);
-        if (card) card.dataset.sponsored = 'true';
+        if (!card) return;
+        card.dataset.sponsored = 'true';
+        // Visible "Sponsored" badge — '.sponsored-label' is also one of the
+        // classes tag.js's own sponsored selector checks (redundant with the
+        // data attribute), and it's what lets this be verified visually.
+        const badgeRow = card.querySelector('.product-badge-row');
+        if (badgeRow && !badgeRow.querySelector('.sponsored-label')) {
+            const label = document.createElement('span');
+            label.className = 'sponsored-label';
+            label.textContent = 'Sponsored';
+            label.style.cssText = 'background:#fff3cd;color:#856404;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 6px;border-radius:4px;margin-left:6px;';
+            badgeRow.insertBefore(label, badgeRow.firstChild);
+        }
     });
     (tiles.bogoSkus || []).forEach(sku => {
         // data-bogo: not read by tag.js today, kept for forward compatibility.
