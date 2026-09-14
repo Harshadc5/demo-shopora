@@ -55,7 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (scenario.hideSections) hideSections(scenario.hideSections);      // Pattern 2 (2.1)
-    if (scenario.cart) renderCart(scenario.cart);
+    if (scenario.cart) {
+        renderCart(scenario.cart);
+        // app.js's own 'storage' listener re-renders the REAL (persisted,
+        // still empty in demo mode) cart whenever localStorage changes in
+        // another same-site tab — which silently wipes this override. Redraw
+        // it if that happens, so switching tabs mid-demo doesn't blank the cart.
+        window.addEventListener('storage', () => renderCart(scenario.cart));
+    }
     if (scenario.cartRecommendations) renderCartRecommendations(scenario.cartRecommendations);  // Pattern 3 (3.4)
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);

@@ -276,7 +276,16 @@
                     if (firstMatch(document, FIELD_SEL.name)) hasFoundItems = true;
                     if (firstMatch(document, FIELD_SEL.price)) hasFoundTotal = true;
 
-                    isReadyToFire = hasFoundItems && hasFoundTotal;
+                    // pdp.html ships static placeholder content (#hero with
+                    // data-sku="FAKE-123") until app.js's renderPDP() replaces
+                    // it — name/price elements exist from first paint either
+                    // way, so also require the placeholder SKU to be gone
+                    // before treating the page as ready (same check
+                    // demo_router.js's waitForRealPdpHero already uses).
+                    var heroEl = document.querySelector('#hero');
+                    var heroIsReal = !heroEl || heroEl.getAttribute('data-sku') !== 'FAKE-123';
+
+                    isReadyToFire = hasFoundItems && hasFoundTotal && heroIsReal;
                 }
                 // Grid Pages (Search, Category, Homepage) Checklist
                 else if (pageType === 'search' || pageType === 'category' || pageType === 'homepage') {
