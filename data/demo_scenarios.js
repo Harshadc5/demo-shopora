@@ -178,6 +178,22 @@ export const demoScenarios = {
             "shipping_label": "FREE delivery"
         }
     },
+    // 2.2: header claims "Free delivery above $35" (real, always-on site
+    // copy) while the cart nudge says "Add $8 more" — real math is
+    // $35 - $32.98 = $2.02, not $8. shippingNudgeOverride deliberately
+    // overrides the otherwise-accurate nudge text; nothing else about this
+    // cart is staged (items/subtotal are real numbers, just under $35).
+    "threshold-disagreement": {
+        "target_page": "cart",
+        "cart": {
+            "items": [
+                { "sku": "bo-3", "qty": 1 },
+                { "sku": "bo-4", "qty": 1 }
+            ],
+            "shipping_label": "$5.99",
+            "shippingNudgeOverride": "Add <strong>$8</strong> more for free shipping"
+        }
+    },
     "hero-claim-mismatch": {
         "target_page": "homepage",
         "hero": {

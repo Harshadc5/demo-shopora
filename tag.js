@@ -2066,6 +2066,20 @@
                     }
                     announcementItems = uniqueList(announcementItems);
                     if (announcementItems.length) result.announcement_bar = announcementItems;
+
+                    // 1b. Free-shipping threshold CLAIM, parsed out of the
+                    // announcement bar — e.g. "Free delivery above $35" -> 35.
+                    // Kept as its own number (not just inside the plain-text
+                    // announcement_bar array) so it's directly comparable
+                    // against whatever the cart page's shipping nudge implies.
+                    for (var ai = 0; ai < announcementItems.length; ai++) {
+                        var aiLower = announcementItems[ai].toLowerCase();
+                        if (aiLower.indexOf('free delivery') !== -1 || aiLower.indexOf('free shipping') !== -1) {
+                            var claimMatch = announcementItems[ai].match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+                            if (claimMatch) result.free_shipping_claim_threshold = Number(claimMatch[1]);
+                            break;
+                        }
+                    }
                 }
 
                 var modules = [];

@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=9';
+import { demoScenarios } from './data/demo_scenarios.js?v=10';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -294,9 +294,18 @@ function renderCart(cart) {
         const FREE_DELIVERY_MIN = 35; // mirrors app.js's own threshold
         const remaining = Math.max(0, FREE_DELIVERY_MIN - subtotal);
         const pct = Math.min(100, (subtotal / FREE_DELIVERY_MIN) * 100);
-        shippingProgress.innerHTML = deliveryCost === 0
-            ? '<p><strong>✓ You unlocked FREE delivery!</strong></p><div class="progress-track"><i style="width:100%"></i></div>'
-            : `<p>Spend <strong>${money(remaining)}</strong> more to unlock free delivery — delivery is ${money(deliveryCost)} on this order</p><div class="progress-track"><i style="width:${pct}%"></i></div>`;
+        if (cart.shippingNudgeOverride) {
+            // Pattern 2 (2.2): a deliberately WRONG nudge message — the
+            // header elsewhere on the page still claims the real $35
+            // threshold, so this creates a genuine claim-vs-nudge
+            // disagreement instead of the accurate-by-construction nudge
+            // every other cart scenario gets below.
+            shippingProgress.innerHTML = `<p>${cart.shippingNudgeOverride}</p><div class="progress-track"><i style="width:${pct}%"></i></div>`;
+        } else {
+            shippingProgress.innerHTML = deliveryCost === 0
+                ? '<p><strong>✓ You unlocked FREE delivery!</strong></p><div class="progress-track"><i style="width:100%"></i></div>'
+                : `<p>Spend <strong>${money(remaining)}</strong> more to unlock free delivery — delivery is ${money(deliveryCost)} on this order</p><div class="progress-track"><i style="width:${pct}%"></i></div>`;
+        }
     }
     set('#summarySavings', money(totalSavings)); // single aggregate value — see comment above on why it can't hold child rows
     set('#summaryTotal', money(total));
