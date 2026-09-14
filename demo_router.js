@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=14';
+import { demoScenarios } from './data/demo_scenarios.js?v=15';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
     if (scenario.categoryTiles) renderCategoryTiles(scenario.categoryTiles);  // Pattern 3 (3.2)
+    if (scenario.searchResults) renderSearchResults(scenario.searchResults);  // Pattern 3 (3.3)
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
@@ -606,6 +607,58 @@ function renderCategoryTiles(skus) {
         card.querySelector('.price-stack strong').textContent = money(product.price);
         card.querySelector('.price-stack del').textContent = money(product.oldPrice);
         card.querySelector('.price-stack span').textContent = `Save ${money(product.oldPrice - product.price)}`;
+
+        grid.appendChild(card);
+    });
+}
+
+
+// =====================================================================
+// SEARCH RESULTS — Pattern 3 (3.3). search.html doesn't exist as a real
+// Shopora page (no real search backend) — it's a demo-only destination
+// that only ever renders through this override. Each tile entry may be a
+// real SKU (looked up in products.js for accurate name/price/rating) or a
+// fully ad-hoc object for catalog-only demo variants (e.g. "PulseTune
+// Sport Earbuds") that don't exist as real products.
+// =====================================================================
+function renderSearchResults(config) {
+    const heading = document.querySelector('#searchHeading');
+    if (heading && config.query) heading.textContent = `Showing results for "${config.query}"`;
+
+    const grid = document.querySelector('#searchGrid');
+    const template = document.querySelector('#productCardTemplate');
+    if (!grid || !template) {
+        console.error('[AIORA DEMO] #searchGrid or #productCardTemplate not found.');
+        return;
+    }
+    grid.innerHTML = '';
+    let adHocSpriteIndex = 0;
+    (config.tiles || []).forEach(entry => {
+        const real = products.find(p => p.id === entry.sku);
+        const item = real || entry;
+        const card = template.content.firstElementChild.cloneNode(true);
+
+        const numericMatch = item.id ? item.id.match(/-(\d+)$/) : null;
+        const spriteIndex = numericMatch ? Math.max(0, Number(numericMatch[1]) - 1) : (adHocSpriteIndex++ % 12);
+        const img = card.querySelector('.product-image');
+        img.classList.add(`sprite-${item.category || 'electronics'}`);
+        img.style.setProperty('--sprite-x', (spriteIndex % 5) * 25 + '%');
+        img.style.setProperty('--sprite-y', Math.floor(spriteIndex / 5) * 50 + '%');
+
+        card.dataset.productId = item.id || entry.sku;
+        card.dataset.brand = item.brand;
+        card.dataset.category = item.category || 'electronics';
+        card.dataset.sponsored = 'false';
+        card.dataset.availability = item.availability || 'in-stock';
+        card.querySelector('.discount-badge').textContent = `${item.discount} OFF`;
+        card.querySelector('.product-brand').textContent = item.brand;
+        card.querySelector('h3').textContent = item.name;
+        card.querySelector('.stars').textContent = `${(item.rating || 4.5).toFixed(1)} ★`;
+        card.querySelector('.rating-count').textContent = ratingCountFor(item.id || entry.sku).toLocaleString('en-IN');
+        card.querySelector('.product-meta').textContent = item.description || '';
+        card.querySelector('.price-stack strong').textContent = money(item.price);
+        card.querySelector('.price-stack del').textContent = money(item.oldPrice);
+        card.querySelector('.price-stack span').textContent = `Save ${money(item.oldPrice - item.price)}`;
 
         grid.appendChild(card);
     });

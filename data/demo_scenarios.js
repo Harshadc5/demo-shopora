@@ -282,6 +282,32 @@ export const demoScenarios = {
             "sponsoredSkus": ["el-2", "el-3", "el-5"]
         }
     },
+    // 3.3: search results for "wireless headphones" collapse to 8 of 10
+    // tiles being PulseTune (80%). Only 4 PulseTune SKUs exist in the real
+    // catalog (el-2, el-3, el-5, el-8) — the spec calls for 5 real +
+    // 3 fabricated, but the real catalog only has 4 PulseTune products, so
+    // this uses 4 real + 4 fabricated demo-only variants to reach the same
+    // 8-of-10 concentration the scenario is actually about. The other 2
+    // tiles (VoltMax Gaming Headset, StreamHub Bluetooth Speaker) are also
+    // fabricated — neither exists as a real SKU under that exact name.
+    "brand-collapse": {
+        "target_page": "search",
+        "searchResults": {
+            "query": "wireless headphones",
+            "tiles": [
+                { "sku": "el-2" },
+                { "sku": "el-3" },
+                { "sku": "el-5" },
+                { "sku": "el-8" },
+                { "sku": "demo-pt-sport", "name": "PulseTune Sport Earbuds", "brand": "PulseTune", "category": "electronics", "price": 69.99, "oldPrice": 89.99, "discount": "22%", "rating": 4.5, "description": "Sweat-resistant earbuds built for workouts." },
+                { "sku": "demo-pt-studio", "name": "PulseTune Studio Headphones", "brand": "PulseTune", "category": "electronics", "price": 149.99, "oldPrice": 189.99, "discount": "21%", "rating": 4.7, "description": "Studio-grade over-ear headphones with rich bass." },
+                { "sku": "demo-pt-kids", "name": "PulseTune Kids Headphones", "brand": "PulseTune", "category": "electronics", "price": 24.99, "oldPrice": 34.99, "discount": "29%", "rating": 4.6, "description": "Volume-limited headphones designed for kids." },
+                { "sku": "demo-pt-travel", "name": "PulseTune Travel Earbuds", "brand": "PulseTune", "category": "electronics", "price": 39.99, "oldPrice": 54.99, "discount": "27%", "rating": 4.3, "description": "Compact earbuds with a pocket-sized charging case." },
+                { "sku": "demo-vm-headset", "name": "VoltMax Gaming Headset", "brand": "VoltMax", "category": "electronics", "price": 79.99, "oldPrice": 99.99, "discount": "20%", "rating": 4.4, "description": "Surround-sound gaming headset with a noise-cancelling mic." },
+                { "sku": "demo-sh-speaker", "name": "StreamHub Bluetooth Speaker", "brand": "StreamHub", "category": "electronics", "price": 44.99, "oldPrice": 59.99, "discount": "25%", "rating": 4.2, "description": "Compact Bluetooth speaker with 10-hour battery life." }
+            ]
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {

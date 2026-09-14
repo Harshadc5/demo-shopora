@@ -5,8 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <meta name="theme-color" content="#10243e">
-        <title>Shop products | SHOPORA</title>
-        <meta name="description" content="Browse and filter all SHOPORA products.">
+        <title>Search results | SHOPORA</title>
+        <meta name="description" content="Search SHOPORA products.">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
@@ -15,7 +15,7 @@
         <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 
-<body data-page-type="category">
+<body data-page-type="search">
         <a class="skip-link" href="#mainContent">Skip to content</a>
         <div class="announcement"><span>Free delivery above $35</span><span>Easy 7-day returns</span><span>100% secure
                         payments</span></div>
@@ -41,55 +41,22 @@
                                                 data-cart-count>0</strong><b>Cart</b></a></nav>
                 </div>
                 <div class="dept-rail"><button class="mobile-menu-button" type="button">☰ All</button><a
-                                href="?category=electronics">Mobiles & Electronics</a><a
-                                href="?category=fashion">Fashion</a><a href="?category=home">Home & Kitchen</a><a
-                                href="?category=books">Books</a><a href="?deal=true">Today's Deals</a><span
+                                href="./category.html?category=electronics">Mobiles & Electronics</a><a
+                                href="./category.html?category=fashion">Fashion</a><a href="./category.html?category=home">Home & Kitchen</a><a
+                                href="./category.html?category=books">Books</a><a href="./category.html?deal=true">Today's Deals</a><span
                                 class="rail-offer">Shopora Plus: extra 5% off</span></div>
         </header>
         <main id="mainContent" class="catalog-shell">
-                <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="./index.html">Home</a><span>›</span><span>All
-                                products</span></nav>
+                <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="./index.html">Home</a><span>›</span><span>Search
+                                results</span></nav>
                 <div class="catalog-heading">
-                        <div><span class="section-kicker">SHOPORA CATALOG</span>
-                                <h1 id="resultsHeading">Find your next favourite</h1>
-                                <p id="resultsSubheading">Quality picks across electronics, fashion, home and books.</p>
-                        </div><button class="filter-toggle button" id="filterToggle" type="button">Filters &
-                                sort</button>
+                        <div><span class="section-kicker">SHOPORA SEARCH</span>
+                                <h1 id="searchHeading">Showing results</h1>
+                        </div>
                 </div>
                 <div class="catalog-layout">
-                        <aside class="sidebar" id="filterPanel">
-                                <div class="filter-title"><strong>Filters</strong><button id="clearFilters"
-                                                type="button">Clear all</button></div><label
-                                        class="filter-group"><span>Search within results</span><input id="searchInput"
-                                                type="search" placeholder="What are you looking for?"></label>
-                                <div class="filter-group"><span>Department</span>
-                                        <div class="category-filter-list" id="categoryFilters"></div>
-                                </div><label class="filter-group"><span>Maximum price</span><input id="priceRange"
-                                                type="range" min="10" max="5000" step="10" value="5000"><output
-                                                id="priceOutput">Up to $5,000</output></label>
-                                <div class="filter-group"><span>Customer rating</span><label class="radio-row"><input
-                                                        type="radio" name="rating" value="0" checked> All
-                                                ratings</label><label class="radio-row"><input type="radio"
-                                                        name="rating" value="4"> ★★★★ & up</label><label
-                                                class="radio-row"><input type="radio" name="rating" value="4.5"> 4.5+
-                                                top rated</label></div>
-                        </aside>
-                        <section class="catalog-results">
-                                <div class="results-toolbar">
-                                        <p id="resultCount">Loading products…</p><label>Sort by <select id="sortSelect">
-                                                        <option value="featured">Featured</option>
-                                                        <option value="price-low">Price: low to high</option>
-                                                        <option value="price-high">Price: high to low</option>
-                                                        <option value="rating">Customer rating</option>
-                                                        <option value="discount">Biggest discount</option>
-                                                </select></label>
-                                </div>
-                                <div class="product-grid catalog-grid" id="catalogGrid"></div>
-                                <div class="empty-results" id="emptyResults" hidden><span>⌕</span>
-                                        <h2>No products found</h2>
-                                        <p>Try changing your search or removing a filter.</p><button
-                                                class="button button-primary" id="emptyClear">Clear filters</button>
-                                </div>
+                        <section class="catalog-results" style="grid-column:1 / -1;">
+                                <div class="product-grid catalog-grid" id="searchGrid"></div>
                         </section>
                 </div>
         </main>
