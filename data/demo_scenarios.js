@@ -383,7 +383,10 @@ export const demoScenarios = {
             "text": "NEW HERE? Use code WELCOME10 for 10% off your first order.",
             "claim_percent": 10,
             "claim_code": "WELCOME10"
-        }
+        },
+        "navOverrides": [
+            { "selector": ".cart-link", "destination": "./cart.html?demo=welcome-code-rejected" }
+        ]
     },
     // 4.4 step 2: guest cart applies WELCOME10 — the exact code the
     // homepage just promised works for new customers — and it's rejected
