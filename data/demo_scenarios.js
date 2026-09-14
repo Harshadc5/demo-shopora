@@ -181,7 +181,7 @@ export const demoScenarios = {
     "hero-claim-mismatch": {
         "target_page": "homepage",
         "hero": {
-            "headline": "UP TO 35% OFF ELECTRONICS",
+            "headline": "UP TO 35% OFF ON ELECTRONICS",
             "claim_scope": "electronics"
         },
         "featuredTiles": ["el-1", "el-3", "el-4", "el-8", "el-2"],
@@ -195,7 +195,7 @@ export const demoScenarios = {
     "hero-claim-mismatch-dollar": {
         "target_page": "homepage",
         "hero": {
-            "headline": "UP TO $100 OFF ELECTRONICS",
+            "headline": "UP TO $100 OFF ON ELECTRONICS",
             "claim_scope": "electronics"
         },
         "featuredTiles": ["el-3", "el-8", "el-1", "el-4", "el-7", "el-2"],
