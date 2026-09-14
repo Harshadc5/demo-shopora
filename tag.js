@@ -2116,7 +2116,26 @@
                     }
                 }
 
+                // 3b. Newsletter signup module + loyalty-tier rail offer — both
+                // are just claim-bearing text blocks elsewhere on the homepage,
+                // reusing the same buildModule()/extractClaim() engine as the
+                // hero and promo banners above (no new parsing logic needed).
+                // Real site copy already contains a Shopora Plus loyalty claim
+                // in the header rail; the newsletter's real copy has no percent
+                // claim at all unless a demo scenario injects one.
+                var newsletterEl = doc.querySelector('.newsletter');
+                if (newsletterEl) {
+                    var newsletterMod = buildModule(newsletterEl, 'newsletter', position++);
+                    if (newsletterMod && newsletterMod.claim) modules.push(newsletterMod);
+                }
+                var loyaltyOfferEl = doc.querySelector('.rail-offer');
+                if (loyaltyOfferEl) {
+                    var loyaltyMod = buildModule(loyaltyOfferEl, 'loyalty', position++);
+                    if (loyaltyMod && loyaltyMod.claim) modules.push(loyaltyMod);
+                }
+
                 if (modules.length) result.modules = modules;
+
 
                 // 4. Countdown timer.
                 var countdownEl = firstMatch(doc, FIELD_SEL.countdown);

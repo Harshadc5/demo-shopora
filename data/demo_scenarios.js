@@ -238,6 +238,18 @@ export const demoScenarios = {
         "target_page": "homepage",
         "dealOfDayOverride": "ho-5"
     },
+    // 2.5: newsletter section claims "member-only 20% off" while the real,
+    // always-on Shopora Plus loyalty rail offer elsewhere on the same page
+    // says "extra 5% off" — two different, directly comparable promises
+    // about what a member actually gets.
+    "newsletter-loyalty-mismatch": {
+        "target_page": "homepage",
+        "newsletterOverride": {
+            "text": "Get weekly price drops, new arrivals and member-only 20% off deals.",
+            "claim_percent": 20,
+            "claim_scope": "members"
+        }
+    },
     // 2.3: category-page banner claims "SAVE UP TO 50%" while the real
     // catalog's electronics discounts only range 17%-29% — no tile
     // override needed, the real category grid already tops out at 29%.

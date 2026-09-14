@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=12';
+import { demoScenarios } from './data/demo_scenarios.js?v=13';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
+    if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
     if (scenario.pdp) {
         pendingAsync++;
@@ -219,6 +220,25 @@ function renderDealOfDayOverride(sku) {
     if (priceEl) priceEl.textContent = money(product.oldPrice);
     const oldEl = document.querySelector('#heroDealOld');
     if (oldEl) oldEl.textContent = ''; // no strikethrough price shown = no discount
+}
+
+// Pattern 2 (2.5): overrides the real newsletter section's paragraph text
+// and tags the section itself with explicit claim attributes, so its
+// member-only percentage claim is directly comparable — via tag.js's
+// buildModule()/extractClaim() reuse — against the real, always-on
+// Shopora Plus loyalty claim in the header rail.
+function renderNewsletterOverride(newsletter) {
+    const section = document.querySelector('.newsletter');
+    if (!section) {
+        console.error('[AIORA DEMO] .newsletter section not found on this page.');
+        return;
+    }
+    if (newsletter.claim_percent != null) section.dataset.claimPercent = newsletter.claim_percent;
+    if (newsletter.claim_scope) section.dataset.claimScope = newsletter.claim_scope;
+    if (newsletter.text) {
+        const p = section.querySelector('p');
+        if (p) p.textContent = newsletter.text;
+    }
 }
 
 // =====================================================================
