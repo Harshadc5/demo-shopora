@@ -1213,6 +1213,12 @@
             if (!name) return null;
             var li = { name: name };
 
+            // SKU — data-mini-id is the real attribute app.js's own
+            // renderCheckout() sets on every mini-item (mirrored by the demo
+            // override too), same idea as buildCartLineItem's sku lookup.
+            var sku = item.getAttribute('data-mini-id') || item.getAttribute('data-product-id') || item.getAttribute('data-sku');
+            if (sku) li.sku = sku;
+
             // FIX: Using parsePrice for Checkout Price
             var rawPrice = textOf(firstMatch(item, FIELD_SEL.checkoutItemPrice), 20);
             var parsed = parsePrice(rawPrice);
@@ -1221,10 +1227,12 @@
                 if (parsed.currency) li.currency = parsed.currency;
             }
 
-            // FIX: Force Quantity to be an Integer instead of a String
+            // FIX: Force Quantity to be an Integer instead of a String —
+            // strip non-digits first, since real checkout copy reads
+            // "Qty 1", not a bare number (plain parseInt returns NaN on that).
             var qty = textOf(firstMatch(item, FIELD_SEL.checkoutItemQuantity), 20);
             if (qty) {
-                var qNum = parseInt(qty, 10);
+                var qNum = parseInt(qty.replace(/[^0-9]/g, ''), 10);
                 if (!isNaN(qNum)) li.quantity = qNum;
             }
 
@@ -1573,6 +1581,18 @@
                 result.delivery_cost = delivery;
                 var parsedDel = parsePrice(delivery);
                 if (parsedDel) result.delivery_numeric = parsedDel.amount;
+
+                // Visible label for the delivery/shipping line (e.g.
+                // "Delivery", "Oversized shipping fee") — the retailer's own
+                // wording for WHY this charge exists, distinct from the
+                // dollar amount alone.
+                var deliveryEl = firstMatch(doc, FIELD_SEL.checkoutDelivery);
+                var deliveryRow = deliveryEl && deliveryEl.closest ? deliveryEl.closest('.summary-row') : null;
+                var deliveryLabelEl = deliveryRow ? deliveryRow.querySelector('span') : null;
+                if (deliveryLabelEl) {
+                    var deliveryLabel = textOf(deliveryLabelEl, 40);
+                    if (deliveryLabel) result.delivery_label = deliveryLabel;
+                }
             }
             if (tax) {
                 result.tax = tax;
