@@ -391,17 +391,16 @@ export const demoScenarios = {
     // 4.4 step 2: guest cart applies WELCOME10 — the exact code the
     // homepage just promised works for new customers — and it's rejected
     // anyway. cart_state.promo_field_state='rejected' vs the homepage's
-    // ClaimSignal for the same code is the coordination failure.
+    // ClaimSignal for the same code is the coordination failure. No `cart`
+    // override here on purpose — this only applies the promo-rejected
+    // state on top of the REAL cart (whatever the user actually added on
+    // the homepage), so the click-through flow shows a real product.
     "welcome-code-rejected": {
         "target_page": "cart",
-        "cart": {
-            "items": [{ "sku": "el-2", "qty": 1 }],
-            "shipping_label": "FREE delivery",
-            "promo": {
-                "state": "rejected",
-                "code": "WELCOME10",
-                "reason": "Invalid code. Please try again."
-            }
+        "promo": {
+            "state": "rejected",
+            "code": "WELCOME10",
+            "reason": "Invalid code. Please try again."
         }
     },
     "category-promise-gap": {

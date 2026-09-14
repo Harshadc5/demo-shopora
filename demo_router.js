@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=23';
+import { demoScenarios } from './data/demo_scenarios.js?v=24';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (scenario.cartRecommendations) renderCartRecommendations(scenario.cartRecommendations);  // Pattern 3 (3.4)
     if (scenario.checkout) renderCheckoutOverride(scenario.checkout);  // Pattern 4 (4.3)
+    if (scenario.promo) applyPromoOverride(scenario.promo);  // Pattern 4 (4.4/4.5)
     if (scenario.claims) renderClaims(scenario.claims);       // Pattern 2+
     if (scenario.hero) renderHeroOverride(scenario.hero);
     if (scenario.featuredTiles) renderFeaturedTiles(scenario.featuredTiles);
@@ -422,31 +423,40 @@ function renderCart(cart) {
     }
 
     renderSavingsBreakdown(cart.savings_breakdown || []);
+}
 
-    // Promo field state — data-promo-state/applied-code read by tag.js's
-    // extractCartState() (fixed for 4.4/4.5); the reason text below reuses
-    // tag.js's EXISTING .promo-error selector (FIELD_SEL.promoInlineReason),
-    // so no tag.js change is needed for that part.
-    if (cart.promo) {
-        const promoInput = document.querySelector('#promoInput, .promo-input');
-        if (promoInput) {
-            const promoField = promoInput.closest('.promo-field') || promoInput.parentElement;
-            if (promoField) {
-                promoField.dataset.promoState = cart.promo.state;
-                if (cart.promo.code) { promoField.dataset.appliedCode = cart.promo.code; promoInput.value = cart.promo.code; }
-                if (cart.promo.reason) {
-                    promoField.dataset.inlineReason = cart.promo.reason;
-                    let msgEl = promoField.querySelector('.promo-error');
-                    if (!msgEl) {
-                        msgEl = document.createElement('small');
-                        msgEl.className = 'promo-error';
-                        msgEl.style.cssText = 'flex-basis:100%;color:#b42318;';
-                        promoField.appendChild(msgEl);
-                    }
-                    msgEl.textContent = cart.promo.reason;
-                }
-            }
+// =====================================================================
+// PROMO OVERRIDE — Pattern 4 (4.4/4.5). Applies a promo-code result
+// (accepted/rejected) on top of whatever cart is REALLY there — doesn't
+// touch cart items at all, so an "add any product, then click cart" flow
+// (see welcome-code-promise's navOverrides) shows the actual product the
+// user picked, not a hardcoded SKU. data-promo-state/applied-code are
+// read by tag.js's extractCartState(); the reason message reuses tag.js's
+// EXISTING .promo-error selector (FIELD_SEL.promoInlineReason) — no
+// tag.js change needed for either.
+// =====================================================================
+function applyPromoOverride(promo) {
+    const promoInput = document.querySelector('#promoInput, .promo-input');
+    if (!promoInput) return;
+    const promoField = promoInput.closest('.promo-field') || promoInput.parentElement;
+    if (!promoField) return;
+
+    promoField.dataset.promoState = promo.state;
+    if (promo.code) { promoField.dataset.appliedCode = promo.code; promoInput.value = promo.code; }
+    if (promo.reason) {
+        promoField.dataset.inlineReason = promo.reason;
+        // The real field is a plain flex row (input + Apply button, no
+        // wrap) — force it to wrap so the message drops to its own line
+        // below, instead of squeezing the input/button into slivers.
+        promoField.style.flexWrap = 'wrap';
+        let msgEl = promoField.querySelector('.promo-error');
+        if (!msgEl) {
+            msgEl = document.createElement('small');
+            msgEl.className = 'promo-error';
+            msgEl.style.cssText = 'flex-basis:100%;color:#b42318;margin-top:0.4rem;';
+            promoField.appendChild(msgEl);
         }
+        msgEl.textContent = promo.reason;
     }
 }
 
