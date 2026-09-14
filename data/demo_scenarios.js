@@ -188,6 +188,30 @@ export const demoScenarios = {
         "featuredSectionHeading": "Big Savings Day Offered- Products",
         "hideSections": [".category-section", "#best-deals", ".promo-banner.promo-tech", ".promo-banner.promo-home"]
     },
+    // 2.1.b: same hero-vs-tiles claim-mismatch story as 2.1, but with a
+    // flat dollar-off claim instead of a percentage claim. Only el-1
+    // actually honors the $100 headline — every other featured tile shows
+    // a smaller, inconsistent dollar-off amount.
+    "hero-claim-mismatch-dollar": {
+        "target_page": "homepage",
+        "hero": {
+            "headline": "UP TO $100 OFF ELECTRONICS",
+            "claim_scope": "electronics"
+        },
+        "featuredTiles": ["el-3", "el-8", "el-1", "el-4", "el-7", "el-2"],
+        "featuredSectionHeading": "Big Savings Day Offered- Products",
+        "hideSections": [".category-section", "#best-deals", ".promo-banner.promo-tech", ".promo-banner.promo-home"],
+        "tiles": {
+            "discountOverrides": [
+                { "sku": "el-3", "badge": "$20 OFF", "price": 139.99 },
+                { "sku": "el-8", "badge": "$23 OFF", "price": 206.99 },
+                { "sku": "el-1", "badge": "$100 OFF", "price": 1699.99 },
+                { "sku": "el-4", "badge": "$7 OFF", "price": 242.99 },
+                { "sku": "el-7", "badge": "$13 OFF", "price": 416.99 },
+                { "sku": "el-2", "badge": "$3 OFF", "price": 116.99 }
+            ]
+        }
+    },
     "trending-brand-dominance": {
         "target_page": "homepage",
         "featuredTiles": ["el-1", "el-4", "el-2", "el-7", "el-10", "fa-1", "el-11", "ho-1", "el-12", "bo-1"],
