@@ -550,8 +550,14 @@
         return (payload && payload.page && payload.page.page_type) || 'unknown';
       }
 
-      function pageTypeLabel(pageType) {
+      // Cosmetic-only override: category.html?wishlist=true is real app.js's
+      // actual wishlist view (no dedicated wishlist.html page exists — see
+      // Pattern 5.4). payload.page_type stays 'category' everywhere (that's
+      // accurate — it IS category.html), this just relabels the chip text
+      // for that one specific URL shape so it reads clearly in the dashboard.
+      function pageTypeLabel(pageType, pageUrl) {
         if (pageType === 'interaction_events') return 'Interaction Events';
+        if (pageType === 'category' && pageUrl && /[?&]wishlist=true\b/.test(pageUrl)) return 'Wishlist';
         return pageType;
       }
 
@@ -643,7 +649,7 @@
         head.innerHTML = `
       <span class="event-top">
         <span class="page-chip-stack">
-          <span class="page-chip ${pageType}">${pageTypeLabel(pageType)}</span>
+          <span class="page-chip ${pageType}">${pageTypeLabel(pageType, row.page_url)}</span>
           ${scenario ? `<span class="scenario-badge">${scenario}</span>` : ''}
         </span>
         <span class="event-url" title="${row.page_url || ''}">${row.page_url || 'unknown URL'}</span>
