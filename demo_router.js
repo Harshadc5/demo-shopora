@@ -75,8 +75,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.promoModule) renderPromoModule(scenario.promoModule);   // Pattern 4 (4.4/4.5)
     if (scenario.disableAddToCart) disableAddToCart();   // Pattern 4 (4.5)
     if (scenario.loyaltyPrompt) renderLoyaltyPromptOverride(scenario.loyaltyPrompt);  // Pattern 5 (5.2)
-    if (scenario.cartBadgeCount !== undefined) overrideCartBadge(scenario.cartBadgeCount);  // Pattern 5 (5.3)
-    if (scenario.wishlistBadgeCount !== undefined) overrideWishlistBadge(scenario.wishlistBadgeCount);  // Pattern 5 (5.4)
+    if (scenario.cartBadgeCount !== undefined) {
+        overrideCartBadge(scenario.cartBadgeCount);  // Pattern 5 (5.3)
+        // app.js's own 'storage' listener calls updateHeaderCounts() on any
+        // same-site localStorage change (e.g. another tab refreshing) and
+        // resets this badge back to the real (untouched) cart size — redraw
+        // the override if that happens.
+        window.addEventListener('storage', () => overrideCartBadge(scenario.cartBadgeCount));
+    }
+    if (scenario.wishlistBadgeCount !== undefined) {
+        overrideWishlistBadge(scenario.wishlistBadgeCount);  // Pattern 5 (5.4)
+        // Same storage-event reset risk as cartBadgeCount above —
+        // updateHeaderCounts() resets both badges together.
+        window.addEventListener('storage', () => overrideWishlistBadge(scenario.wishlistBadgeCount));
+    }
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
