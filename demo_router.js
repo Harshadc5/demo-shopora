@@ -413,18 +413,26 @@ function renderCheckoutOverride(checkout) {
         const product = products.find(p => p.id === sku);
         if (!product) {
             console.error(`[AIORA DEMO] Unknown SKU "${sku}" — check products.js`);
-            return { sku, qty, name: sku, lineTotal: 0 };
+            return { sku, qty, name: sku, category: 'electronics', lineTotal: 0 };
         }
-        return { sku, qty, name: product.name, lineTotal: +(product.price * qty).toFixed(2) };
+        return { sku, qty, name: product.name, category: product.category, lineTotal: +(product.price * qty).toFixed(2) };
     });
 
-    itemsEl.innerHTML = resolvedItems.length ? resolvedItems.map(item => `
+    // Mirrors app.js's own applyVisual()/renderCart()'s sprite-positioning
+    // logic, so checkout items show the same product image as everywhere
+    // else instead of a blank placeholder box.
+    itemsEl.innerHTML = resolvedItems.length ? resolvedItems.map(item => {
+        const spriteIndex = Math.max(0, Number(item.sku.split('-')[1]) - 1);
+        const spriteX = (spriteIndex % 5) * 25 + '%';
+        const spriteY = Math.floor(spriteIndex / 5) * 50 + '%';
+        return `
     <div class="mini-item" data-mini-id="${item.sku}">
-      <div class="product-image"></div>
+      <div class="product-image sprite-${item.category}" style="--sprite-x:${spriteX};--sprite-y:${spriteY}"></div>
       <div><p>${item.name}</p><small>Qty ${item.qty}</small></div>
       <strong>${money(item.lineTotal)}</strong>
     </div>
-  `).join('') : '<div class="cart-empty"><p>Your cart is empty.</p><a class="button button-primary" href="./category.html">Shop products</a></div>';
+  `;
+    }).join('') : '<div class="cart-empty"><p>Your cart is empty.</p><a class="button button-primary" href="./category.html">Shop products</a></div>';
 
     const subtotal = +resolvedItems.reduce((sum, i) => sum + i.lineTotal, 0).toFixed(2);
     const set = (id, text) => { const el = document.querySelector(id); if (el) el.textContent = text; };
