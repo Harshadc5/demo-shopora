@@ -196,7 +196,8 @@ export const demoScenarios = {
         "target_page": "homepage",
         "hero": {
             "headline": "UP TO $100 OFF ON ELECTRONICS",
-            "claim_scope": "electronics"
+            "claim_scope": "electronics",
+            "claim_amount": 100
         },
         "featuredTiles": ["el-3", "el-8", "el-1", "el-4", "el-7", "el-2"],
         "featuredSectionHeading": "Big Savings Day Offered- Products",

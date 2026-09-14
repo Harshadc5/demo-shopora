@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=8';
+import { demoScenarios } from './data/demo_scenarios.js?v=9';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -446,6 +446,10 @@ function renderHeroOverride(hero) {
     }
     heroSection.dataset.moduleType = 'hero';
     if (hero.claim_scope) heroSection.dataset.claimScope = hero.claim_scope;
+    if (hero.claim_amount != null) {
+        heroSection.dataset.claimAmount = hero.claim_amount;
+        heroSection.dataset.claimType = 'dollar_off';
+    }
     if (hero.headline) {
         const h1 = heroSection.querySelector('.hero-copy h1, h1');
         if (h1) h1.textContent = hero.headline;
