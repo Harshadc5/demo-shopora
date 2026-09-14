@@ -458,6 +458,15 @@ function applyPromoOverride(promo) {
         }
         msgEl.textContent = promo.reason;
     }
+
+    // The real #applyPromoBtn calls app.js's own applyPromo(), which checks
+    // a REAL promo-code table — WELCOME10 is a genuinely valid code there
+    // (used by Pattern 1's welcome-code-returning-member), so a live click
+    // would silently accept it for real, contradicting this scenario's
+    // whole "rejected" story. Disabling the button means the browser never
+    // fires a click event on it at all, so app.js's real handler can't run.
+    const applyBtn = document.querySelector('#applyPromoBtn');
+    if (applyBtn) applyBtn.disabled = true;
 }
 
 
