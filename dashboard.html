@@ -312,6 +312,24 @@
       color: #0f6674
     }
 
+    .page-chip-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .3rem
+    }
+
+    .scenario-badge {
+      font-size: .64rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      padding: .18rem .5rem;
+      border-radius: 6px;
+      background: var(--navy);
+      color: var(--accent);
+      white-space: nowrap
+    }
+
     .event-url {
       font-size: 1.05rem;
       color: var(--ink);
@@ -536,6 +554,39 @@
         return pageType;
       }
 
+      // Maps data/demo_scenarios.js slugs to the pattern/scenario numbers used
+      // in the team-facing walkthrough, so a shared demo URL is instantly
+      // recognizable instead of just being an opaque slug. Update this map
+      // whenever a new scenario is added to demo_scenarios.js.
+      const SCENARIO_LABELS = {
+        'stacked-discounts': 'S-1.1',
+        'shipping-threshold-broken': 'S-1.2',
+        'welcome-code-returning-member': 'S-1.3',
+        'multi-mechanism-stack': 'S-1.4',
+        'margin-floor-violation': 'S-1.5',
+        'hero-claim-mismatch': 'S-2.1',
+        'trending-brand-dominance': 'S-3.1',
+        'category-promise-gap': 'S-4.1',
+        'promise-gap-destination': 'S-4.1',
+        'identity-recognized': 'S-5.1',
+        'identity-lost': 'S-5.1'
+      };
+
+      // Only returns something when ?demo=... is actually present in the
+      // page URL — normal, non-demo page visits get no badge at all.
+      function scenarioBadge(pageUrl) {
+        if (!pageUrl) return null;
+        let slug;
+        try {
+          slug = new URL(pageUrl).searchParams.get('demo');
+        } catch (e) {
+          const m = pageUrl.match(/[?&]demo=([^&]+)/);
+          slug = m ? decodeURIComponent(m[1]) : null;
+        }
+        if (!slug) return null;
+        return SCENARIO_LABELS[slug] || ('DEMO: ' + slug);
+      }
+
       function buildSignalBadges(payload) {
         const sig = (payload && payload.signals) || {};
         const badges = [];
@@ -558,17 +609,21 @@
       function renderRow(row) {
         const payload = row.payload || {};
         const pageType = pageTypeFromPayload(payload);
+        const scenario = scenarioBadge(row.page_url);
         const card = document.createElement('div');
         card.className = 'event-card';
         card.dataset.search = [
-          row.page_url, row.client_id, row.session_token, pageType
+          row.page_url, row.client_id, row.session_token, pageType, scenario
         ].filter(Boolean).join(' ').toLowerCase();
 
         const head = document.createElement('div');
         head.className = 'event-head';
         head.innerHTML = `
       <span class="event-top">
-        <span class="page-chip ${pageType}">${pageTypeLabel(pageType)}</span>
+        <span class="page-chip-stack">
+          <span class="page-chip ${pageType}">${pageTypeLabel(pageType)}</span>
+          ${scenario ? `<span class="scenario-badge">${scenario}</span>` : ''}
+        </span>
         <span class="event-url" title="${row.page_url || ''}">${row.page_url || 'unknown URL'}</span>
         <span class="chevron">▶</span>
       </span>
