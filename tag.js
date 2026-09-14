@@ -1920,11 +1920,34 @@
                 // --- NEW ADDITIONS FOR TIER 4 --- w.r.t. Canonical Signal Schema
 
                 // 1. CSS Hidden Blocks (Checking for common hidden patterns)
+                /*var hiddenEls = doc.querySelectorAll('.hidden, .d-none, .sr-only, [hidden], [style*="display: none"], [style*="display:none"]');
+                if (hiddenEls.length > 0) {
+                    signals.css_hidden_blocks = [];
+                    // Cap at 5 to protect the 1KB budget!
+                    for (var i = 0; i < Math.min(hiddenEls.length, 5); i++) {
+                        var copy = textOf(hiddenEls[i], 100);
+                        if (copy) {
+                            signals.css_hidden_blocks.push({
+                                selector: hiddenEls[i].className || hiddenEls[i].tagName.toLowerCase(),
+                                gated_copy: copy,
+                                rendered: false
+                            });
+                        }
+                    }
+                }*/
                 var hiddenEls = doc.querySelectorAll('.hidden, .d-none, .sr-only, [hidden], [style*="display: none"], [style*="display:none"]');
                 if (hiddenEls.length > 0) {
                     signals.css_hidden_blocks = [];
                     // Cap at 5 to protect the 1KB budget!
                     for (var i = 0; i < Math.min(hiddenEls.length, 5); i++) {
+                        // Skip the real cart/checkout "promo discount" row
+                        // (cart's #promoRow, checkout's #checkoutPromoRow) —
+                        // it's legitimately hidden by design until a promo
+                        // is active, not gated content worth flagging, and
+                        // its default empty state ("Promo () Remove-$0.00")
+                        // would otherwise show up as noise on every single
+                        // cart/checkout capture that has no promo applied.
+                        if (hiddenEls[i].classList && hiddenEls[i].classList.contains('savings')) continue;
                         var copy = textOf(hiddenEls[i], 100);
                         if (copy) {
                             signals.css_hidden_blocks.push({
