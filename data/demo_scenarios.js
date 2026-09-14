@@ -403,6 +403,44 @@ export const demoScenarios = {
             "reason": "Invalid code. Please try again."
         }
     },
+    // 4.5 step 1: homepage promo claims $50 off orders over $200 with
+    // SAVE50. Add-to-cart is disabled everywhere on this page — the next
+    // step's cart is fully pre-staged to hit an exact total regardless of
+    // what's clicked, so a real add would only be visually misleading.
+    "save50-promise": {
+        "target_page": "homepage",
+        "promoModule": {
+            "text": "SAVE $50 ON ORDERS OVER $200 with code SAVE50",
+            "claim_amount": 50,
+            "claim_code": "SAVE50",
+            "claim_min_spend": 200
+        },
+        "disableAddToCart": true,
+        "navOverrides": [
+            { "selector": ".cart-link", "destination": "./cart.html?demo=save50-broken" }
+        ]
+    },
+    // 4.5 step 2: cart totals $214.99 (staged prices, not real catalog
+    // prices — el-1 is really $1,499.99, el-4 is really $199.99). SAVE50
+    // is accepted but only knocks off $30, not the $50 the homepage just
+    // promised for orders over $200 — this cart clears that threshold.
+    "save50-broken": {
+        "target_page": "cart",
+        "cart": {
+            "items": [
+                { "sku": "el-1", "qty": 1, "price": 149.99 },
+                { "sku": "el-4", "qty": 1, "price": 65.00 }
+            ],
+            "shipping_label": "FREE delivery",
+            "savings_breakdown": [
+                { "type": "code", "label": "SAVE50 code", "amount": 30.00, "code": "SAVE50" }
+            ]
+        },
+        "promo": {
+            "state": "accepted",
+            "code": "SAVE50"
+        }
+    },
     "category-promise-gap": {
         "target_page": "category",
         "banner": {

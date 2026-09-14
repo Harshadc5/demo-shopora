@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=24';
+import { demoScenarios } from './data/demo_scenarios.js?v=25';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.searchResults) renderSearchResults(scenario.searchResults);  // Pattern 3 (3.3)
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.promoModule) renderPromoModule(scenario.promoModule);   // Pattern 4 (4.4/4.5)
+    if (scenario.disableAddToCart) disableAddToCart();   // Pattern 4 (4.5)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
@@ -258,6 +259,15 @@ function renderPromoModule(promo) {
     hero.insertAdjacentElement('afterend', section);
 }
 
+// Pattern 4 (4.5): the cart on this scenario's next step is pre-staged with
+// exact prices to hit a specific total ($214.99) — a real "Add to cart"
+// click wouldn't change what the cart page shows (it's fully overridden
+// regardless), but would be visually confusing/misleading during a live
+// walkthrough, so disable every add-to-cart control on the page outright.
+function disableAddToCart() {
+    document.querySelectorAll('.add-to-cart, #heroDealAdd').forEach(btn => { btn.disabled = true; });
+}
+
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card
 // (#heroDealName/#heroDealPrice/#heroDealOld, populated by app.js on every
 // homepage visit) to show a product at its full catalog price with the
@@ -312,22 +322,27 @@ function renderCart(cart) {
         return;
     }
 
-    // products.js uses `id`, not `sku`.
-    const resolvedItems = cart.items.map(({ sku, qty, note }) => {
+    // products.js uses `id`, not `sku`. An explicit `price` on an item
+    // entry overrides the real catalog price (4.5: staged prices to hit an
+    // exact cart total) — old price/discount are suppressed in that case
+    // since they'd otherwise show a strikethrough/badge computed off the
+    // real catalog price, which wouldn't mathematically match the override.
+    const resolvedItems = cart.items.map(({ sku, qty, note, price: priceOverride }) => {
         const product = products.find(p => p.id === sku);
         if (!product) {
             console.error(`[AIORA DEMO] Unknown SKU "${sku}" — check products.js`);
             return { sku, qty, note, name: sku, price: 0, lineTotal: 0 };
         }
+        const price = priceOverride != null ? priceOverride : product.price;
         return {
             sku, qty, note,
             name: product.name,
-            price: product.price,
+            price,
             category: product.category,
             description: product.description,
-            oldPrice: product.oldPrice,
-            discount: product.discount,
-            lineTotal: +(product.price * qty).toFixed(2)
+            oldPrice: priceOverride != null ? null : product.oldPrice,
+            discount: priceOverride != null ? null : product.discount,
+            lineTotal: +(price * qty).toFixed(2)
         };
     });
 
