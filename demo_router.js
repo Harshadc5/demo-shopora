@@ -617,6 +617,20 @@ function renderCategoryTiles(skus) {
         card.querySelector('.price-stack del').textContent = money(product.oldPrice);
         card.querySelector('.price-stack span').textContent = `Save ${money(product.oldPrice - product.price)}`;
 
+        // app.js's real addToCart() is private to its own module scope, and
+        // the destination cart page (when a scenario chains into one, e.g.
+        // 4.2's bogo-broken-cart) is fully scripted regardless of what's
+        // "really" added — so this just bumps the header badge visually,
+        // for a realistic click response, without touching real cart storage.
+        const addBtn = card.querySelector('.add-to-cart');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                document.querySelectorAll('[data-cart-count]').forEach(node => {
+                    node.textContent = String((parseInt(node.textContent, 10) || 0) + 1);
+                });
+            });
+        }
+
         grid.appendChild(card);
     });
 }
