@@ -1974,17 +1974,21 @@
             return seen;
         }
 
+
         function extractClaim(el) {
             if (!el) return null;
             var text = el.textContent || '';
             var percentAttr = el.getAttribute('data-claim-percent');
+            var amountAttr = el.getAttribute('data-claim-amount');
             var typeAttr = el.getAttribute('data-claim-type');
             var scopeAttr = el.getAttribute('data-claim-scope');
             var codeAttr = el.getAttribute('data-claim-code');
             var minSpendAttr = el.getAttribute('data-claim-min-spend');
             var percentMatch = text.match(/(\d{1,3})\s*%/);
+            var amountMatch = text.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
 
             var percent = percentAttr ? Number(percentAttr) : (percentMatch ? Number(percentMatch[1]) : null);
+            var amount = amountAttr ? Number(amountAttr) : (amountMatch ? Number(amountMatch[1]) : null);
             var scope = scopeAttr || null;
 
             // Fallback scope inference: scan the module's own text for known
@@ -1997,13 +2001,15 @@
                 }
             }
 
-            if (percent == null && !scope) return null; // nothing claim-worthy here
+            if (percent == null && amount == null && !scope) return null; // nothing claim-worthy here
 
-            var claim = { percent: percent, type: typeAttr || 'percentage', scope: scope };
+            var inferredType = percent != null ? 'percentage' : (amount != null ? 'dollar_off' : null);
+            var claim = { percent: percent, amount: amount, type: typeAttr || inferredType, scope: scope };
             if (codeAttr) claim.code = codeAttr;
             if (minSpendAttr) claim.min_spend = Number(minSpendAttr);
             return claim;
         }
+
 
         function extractDisclosure(el) {
             if (!el) return null;
