@@ -245,14 +245,14 @@ function renderPromoModule(promo) {
     // override those for a slim single-line strip, but keep its white text
     // color (already correct against a dark background) and use the site's
     // real navy token instead of an off-theme color.
-    el.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;min-height:auto;box-sizing:border-box;padding:1rem 1.5rem;background:var(--navy,#10243e);border-radius:var(--radius,12px);text-align:center;';
+    el.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;min-height:88px;box-sizing:border-box;padding:1.5rem;background:var(--navy,#10243e);border-radius:var(--radius,12px);text-align:center;';
     // <h2> — same element tag.js's existing promo-banner extraction already
     // reads into modules[].headline (promoBannerEls[p].querySelector('h2,
     // h3')), so the visible text lands in the payload with zero new
     // tag.js code. Inline-styled to override .promo-banner h2's real CSS
     // (font-size:2rem, meant for the hero-sized tech/home banners).
     const heading = document.createElement('h2');
-    heading.style.cssText = 'font-size:0.95rem;font-weight:700;letter-spacing:normal;margin:0;';
+    heading.style.cssText = 'font-size:1.15rem;font-weight:700;letter-spacing:normal;margin:0;';
     heading.textContent = promo.text;
     el.appendChild(heading);
     section.appendChild(el);
