@@ -229,6 +229,17 @@ export const demoScenarios = {
             ]
         }
     },
+    // 2.3: category-page banner claims "SAVE UP TO 50%" while the real
+    // catalog's electronics discounts only range 17%-29% — no tile
+    // override needed, the real category grid already tops out at 29%.
+    "category-claim-mismatch": {
+        "target_page": "category",
+        "banner": {
+            "headline": "SAVE UP TO 50% ON ELECTRONICS!",
+            "claim_percent": 50,
+            "claim_scope": "electronics"
+        }
+    },
     "trending-brand-dominance": {
         "target_page": "homepage",
         "featuredTiles": ["el-1", "el-4", "el-2", "el-7", "el-10", "fa-1", "el-11", "ho-1", "el-12", "bo-1"],
