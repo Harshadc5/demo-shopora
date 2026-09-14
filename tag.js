@@ -1044,6 +1044,27 @@
                 }
 
 
+
+                // --- NEW: CART LINE ITEMS FIRST ---
+                // Same idea as the PDP hero extraction above: the real cart
+                // line item only matches a low-priority CARD_SELECTORS entry
+                // ([data-product-id]), so collectAllCards() below would
+                // otherwise append it AFTER recommendation/also-bought tiles
+                // that match a higher-priority selector (.product-card).
+                // Extract it first so position 1 is always what's actually
+                // in the cart, matching the hero-first convention on PDP.
+                if (pageType === 'cart') {
+                    var cartItemEls = doc.querySelectorAll('#cartItems .cart-item, #cartItems article.cart-item');
+                    for (var c = 0; c < cartItemEls.length; c++) {
+                        var cartTile = buildTile(cartItemEls[c], positionCounter);
+                        if (cartTile) {
+                            cartTile.surface = 'cart';
+                            tiles.push(cartTile);
+                            positionCounter++;
+                        }
+                    }
+                }
+
                 // Phase 1: Extract the regular grids (Customers Also Bought, etc.)
                 var cards = collectAllCards(doc);
                 for (var i = 0; i < cards.length; i++) {
@@ -1053,6 +1074,9 @@
                     // Prevent accidentally extracting the Hero product twice if it looks like a card
                     var heroSelectors = FIELD_SEL.heroElement.join(',');
                     if (pageType === 'pdp' && cards[i].closest && cards[i].closest(heroSelectors)) continue;
+
+                    // Prevent double-extracting cart line items already handled above.
+                    if (pageType === 'cart' && cards[i].closest && cards[i].closest('.cart-item')) continue;
 
                     var tile = buildTile(cards[i], positionCounter);
                     if (tile) {
