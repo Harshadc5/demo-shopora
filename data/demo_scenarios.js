@@ -340,6 +340,7 @@ export const demoScenarios = {
     // Tee) gets a visible "BOGO: Buy One Get One Free" badge + data-bogo.
     "bogo-promise": {
         "target_page": "category",
+        "categoryTiles": ["fa-2", "fa-1", "fa-3", "fa-4", "fa-5", "fa-6", "fa-7", "fa-8", "fa-9", "fa-10"],
         "tiles": {
             "bogoSkus": ["fa-1"]
         }
