@@ -407,6 +407,9 @@ export const demoScenarios = {
     // SAVE50. Add-to-cart is disabled everywhere on this page — the next
     // step's cart is fully pre-staged to hit an exact total regardless of
     // what's clicked, so a real add would only be visually misleading.
+    // cartBadgeCount just shows "2" up front (matching save50-broken's
+    // 2 staged items) so the header looks consistent across both steps of
+    // the walkthrough, instead of sitting at 0 with nothing addable.
     "save50-promise": {
         "target_page": "homepage",
         "promoModule": {
@@ -416,6 +419,7 @@ export const demoScenarios = {
             "claim_min_spend": 200
         },
         "disableAddToCart": true,
+        "cartBadgeCount": 2,
         "navOverrides": [
             { "selector": ".cart-link", "destination": "./cart.html?demo=save50-broken" }
         ]
