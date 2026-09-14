@@ -1615,7 +1615,16 @@
             // member 5% off" row on checkout) — mirrors cart's existing
             // loyalty_discount field, which this page never had.
             var checkoutLoyaltyEl = firstMatch(doc, FIELD_SEL.checkoutLoyalty);
-            if (checkoutLoyaltyEl) result.loyalty_discount = textOf(checkoutLoyaltyEl, 60);
+            if (checkoutLoyaltyEl) {
+                result.loyalty_discount = textOf(checkoutLoyaltyEl, 60);
+                // Feed its dollar amount into savings_numeric so
+                // cart_math_match's reconciliation (subtotal - savings + tax
+                // + delivery) accounts for it — otherwise a real, correct
+                // Plus-member checkout total would always look like a false
+                // "math doesn't add up" coordination failure.
+                var discMatch = result.loyalty_discount && result.loyalty_discount.match(/\$([\d,]+\.?\d*)/);
+                if (discMatch) result.savings_numeric = parseFloat(discMatch[1].replace(/,/g, ''));
+            }
 
             result.order_button_shown = !!firstMatch(doc, FIELD_SEL.checkoutOrderButton);
 
