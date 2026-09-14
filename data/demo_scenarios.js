@@ -482,5 +482,20 @@ export const demoScenarios = {
     },
     "identity-lost": {
         "target_page": "cart"
+    },
+    // Pattern 5 (5.2): checkout.html's real .account-chip (recognized/Plus,
+    // driven by the genuine ?identity=logged-in&member_tier=plus URL params
+    // via app.js) is visually hidden by design — revealIdentityChip just
+    // strips that display:none. loyaltyPrompt injects a second, independent
+    // identity-bearing component (a "join the loyalty program" prompt) that
+    // always says 'guest', regardless of the header's real state — the two
+    // disagreeing on the same page is the coordination failure being shown.
+    "loyalty-inconsistent": {
+        "target_page": "checkout",
+        "revealIdentityChip": true,
+        "loyaltyPrompt": {
+            "identityState": "guest",
+            "text": "Not a member? Join for 5% off."
+        }
     }
 };

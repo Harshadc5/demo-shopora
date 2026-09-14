@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=25';
+import { demoScenarios } from './data/demo_scenarios.js?v=26';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -74,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scenario.featuredSectionHeading) renderFeaturedSectionHeading(scenario.featuredSectionHeading);   // Pattern 2 (2.1)
     if (scenario.promoModule) renderPromoModule(scenario.promoModule);   // Pattern 4 (4.4/4.5)
     if (scenario.disableAddToCart) disableAddToCart();   // Pattern 4 (4.5)
+    if (scenario.revealIdentityChip) revealCheckoutIdentityChip();  // Pattern 5 (5.2)
+    if (scenario.loyaltyPrompt) renderLoyaltyPromptOverride(scenario.loyaltyPrompt);  // Pattern 5 (5.2)
     if (scenario.dealOfDayOverride) renderDealOfDayOverride(scenario.dealOfDayOverride);   // Pattern 2 (2.4)
     if (scenario.newsletterOverride) renderNewsletterOverride(scenario.newsletterOverride);   // Pattern 2 (2.5)
     if (scenario.banner) renderCategoryBanner(scenario.banner);       // Pattern 4 (4.1)
@@ -276,6 +278,40 @@ function disableAddToCart() {
         e.preventDefault();
         e.stopImmediatePropagation();
     }, true);
+}
+
+// Pattern 5 (5.2): checkout.html's real .account-chip is wrapped in a
+// `display:none` div by design (the compact checkout header normally hides
+// it) — real app.js's initIdentity()/initLoyaltyChip() already populate its
+// data-identity-state/data-member-tier and "Hello, Rahul / Shopora Plus"
+// text correctly from the real ?identity=logged-in&member_tier=plus URL
+// params, it's just invisible. This scenario needs it VISIBLE (so the
+// mismatch against the loyalty prompt below is something a person can
+// actually see), so this only strips the inline display:none — it doesn't
+// touch identity state itself, that's 100% real app.js behavior.
+function revealCheckoutIdentityChip() {
+    const chip = document.querySelector('.account-chip');
+    if (!chip) return;
+    const wrapper = chip.parentElement;
+    if (wrapper && wrapper.style.display === 'none') wrapper.style.display = '';
+}
+
+// Pattern 5 (5.2): checkout.html has no real "join the loyalty program"
+// prompt module anywhere — this injects a demo-only one into the order
+// summary sidebar, deliberately carrying its OWN data-identity-state
+// ('guest') independent of whatever the header chip says, so the two
+// components can visibly disagree about the shopper's identity on the same
+// page. data-component='prompt' matches the spec's DOM contract.
+function renderLoyaltyPromptOverride(config) {
+    const summary = document.querySelector('.checkout-summary');
+    if (!summary) return;
+    const el = document.createElement('div');
+    el.className = 'loyalty-prompt';
+    el.dataset.component = 'prompt';
+    el.dataset.identityState = config.identityState || 'guest';
+    el.style.cssText = 'margin-top:1rem;padding:0.85rem 1rem;background:#f4f6fa;border-radius:10px;font-size:0.85rem;text-align:center;color:var(--navy,#10243e);';
+    el.textContent = config.text || 'Not a member? Join for 5% off.';
+    summary.appendChild(el);
 }
 
 // Pattern 2 (2.4): overrides the real "Deal of the day" spotlight card

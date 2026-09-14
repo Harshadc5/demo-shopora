@@ -2004,6 +2004,27 @@
                     t5.component_type = 'unknown';
                 }
 
+                // 1b. ALL identity-state-bearing elements on the page, in
+                // case more than one component disagrees (e.g. header says
+                // recognized, a loyalty prompt elsewhere says guest) — only
+                // reported when there's more than one, so a normal page
+                // (exactly one identity element) sees zero change in output.
+                var identityEls = doc.querySelectorAll('[data-identity-state]');
+                if (identityEls.length > 1) {
+                    var identitySignals = [];
+                    for (var ie = 0; ie < identityEls.length; ie++) {
+                        var ieEl = identityEls[ie];
+                        var sig = {
+                            component_type: ieEl.getAttribute('data-component') || (ieEl === greetingEl ? 'header_chip' : 'unknown'),
+                            state: ieEl.getAttribute('data-identity-state')
+                        };
+                        var ieTier = ieEl.getAttribute('data-member-tier');
+                        if (ieTier) sig.member_tier = ieTier;
+                        identitySignals.push(sig);
+                    }
+                    t5.identity_signals = identitySignals;
+                }
+
                 // 2. Loyalty tier label (string)
                 var tierEl = doc.querySelector('.loyalty-tier, .member-tier, [data-member-tier]');
                 if (tierEl) {
