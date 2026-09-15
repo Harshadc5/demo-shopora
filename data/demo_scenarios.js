@@ -262,8 +262,14 @@ export const demoScenarios = {
     // 2.3: category-page banner claims "SAVE UP TO 50%" while the real
     // catalog's electronics discounts only range 17%-29% — no tile
     // override needed, the real category grid already tops out at 29%.
+    // 2.3: forces the real 12-SKU electronics grid via categoryTiles
+    // instead of relying on the trigger URL carrying ?category=electronics
+    // — matches the project's own "every scenario renders the same way,
+    // every time" philosophy (deterministic regardless of how someone
+    // navigates in), and matches 3.2/3.5's existing pattern for this.
     "category-claim-mismatch": {
         "target_page": "category",
+        "categoryTiles": ["el-1", "el-2", "el-3", "el-4", "el-5", "el-6", "el-7", "el-8", "el-9", "el-10", "el-11", "el-12"],
         "banner": {
             "headline": "SAVE UP TO 50% ON ELECTRONICS!",
             "claim_percent": 50,
