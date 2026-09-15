@@ -404,7 +404,8 @@
     .event-body {
       display: none;
       border-top: 1px solid var(--line);
-      background: #0b1c32
+      background: #0b1c32;
+      position: relative
     }
 
     .event-card.open .event-body {
@@ -420,6 +421,31 @@
       overflow-x: auto;
       max-height: 480px;
       font-family: 'SFMono-Regular', Consolas, monospace
+    }
+
+    .copy-payload-btn {
+      position: absolute;
+      top: .7rem;
+      right: .9rem;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, .18);
+      background: rgba(255, 255, 255, .08);
+      color: #d7e3f0;
+      border-radius: 7px;
+      padding: .4rem .75rem;
+      font-size: .74rem;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .copy-payload-btn:hover {
+      background: rgba(255, 255, 255, .16)
+    }
+
+    .copy-payload-btn.copied {
+      background: #12805c;
+      border-color: #12805c;
+      color: #fff
     }
 
     footer.note {
@@ -680,8 +706,39 @@
 
         const body = document.createElement('div');
         body.className = 'event-body';
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'copy-payload-btn';
+        copyBtn.textContent = 'Copy payload';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const text = JSON.stringify(payload, null, 2);
+          const showCopied = () => {
+            copyBtn.textContent = 'Copied!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.textContent = 'Copy payload'; copyBtn.classList.remove('copied'); }, 1500);
+          };
+          const showFailed = () => {
+            copyBtn.textContent = 'Copy failed';
+            setTimeout(() => { copyBtn.textContent = 'Copy payload'; }, 1500);
+          };
+          if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(showCopied, showFailed);
+          } else {
+            // Fallback for non-HTTPS/older browsers: a hidden textarea + execCommand.
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); showCopied(); } catch (err) { showFailed(); }
+            document.body.removeChild(ta);
+          }
+        });
         const pre = document.createElement('pre');
         pre.textContent = JSON.stringify(payload, null, 2);
+        body.appendChild(copyBtn);
         body.appendChild(pre);
 
         card.appendChild(head);
