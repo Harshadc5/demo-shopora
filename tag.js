@@ -2175,7 +2175,8 @@
 
         function extractClaim(el) {
             if (!el) return null;
-            var text = el.textContent || '';
+            var textScope = el.querySelector('.hero-copy') || el;
+            var text = textScope.textContent || '';
             var percentAttr = el.getAttribute('data-claim-percent');
             var amountAttr = el.getAttribute('data-claim-amount');
             var typeAttr = el.getAttribute('data-claim-type');
