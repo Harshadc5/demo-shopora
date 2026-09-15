@@ -2183,7 +2183,14 @@
             var codeAttr = el.getAttribute('data-claim-code');
             var minSpendAttr = el.getAttribute('data-claim-min-spend');
             var percentMatch = text.match(/(\d{1,3})\s*%/);
-            var amountMatch = text.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+            // Strip "over $X" / "above $X" / "spend $X" phrases first — those
+            // describe a min-spend THRESHOLD (already captured separately via
+            // data-claim-min-spend), not a dollar-off claim amount. Without
+            // this, real leftover promo text like "orders over $50" gets
+            // misread as a $50-off claim alongside a genuine 35%-off claim.
+            var textForAmount = text.replace(/\b(?:over|above|spend)\s+\$\s*\d+(?:\.\d{1,2})?/gi, '');
+            var amountMatch = textForAmount.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+
 
             var percent = percentAttr ? Number(percentAttr) : (percentMatch ? Number(percentMatch[1]) : null);
             var amount = amountAttr ? Number(amountAttr) : (amountMatch ? Number(amountMatch[1]) : null);
