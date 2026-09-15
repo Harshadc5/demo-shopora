@@ -1065,8 +1065,24 @@
                         var cartTile = buildTile(cartItemEls[c], positionCounter);
                         if (cartTile) {
                             cartTile.surface = 'cart';
+                            // buildTile()'s price/old_price came from the same
+                            // generic match that also feeds t2's line_total —
+                            // cart markup has no separate per-unit price
+                            // element, so for quantity > 1 this tile's price
+                            // is actually the line total (same root cause as
+                            // buildCartLineItem's fix). Divide back down using
+                            // the same quantity-control element t2 reads, so
+                            // t1 and t2 agree on the same line item.
+                            var cartQtyEl = firstMatch(cartItemEls[c], FIELD_SEL.cartItemQuantity);
+                            var cartQtyText = cartQtyEl ? (cartQtyEl.getAttribute('aria-valuenow') || cartQtyEl.getAttribute('value') || cartQtyEl.value || cartQtyEl.textContent).trim() : null;
+                            var cartQtyNum = cartQtyText ? parseInt(cartQtyText, 10) : null;
+                            if (cartQtyNum > 1) {
+                                if (cartTile.price != null) cartTile.price = +(cartTile.price / cartQtyNum).toFixed(2);
+                                if (cartTile.old_price != null) cartTile.old_price = +(cartTile.old_price / cartQtyNum).toFixed(2);
+                            }
                             tiles.push(cartTile);
                             positionCounter++;
+
                         }
                     }
                 }
@@ -1175,6 +1191,20 @@
             var rawTotal = textOf(firstMatch(item, FIELD_SEL.cartItemLineTotal), 20);
             var parsedTotal = parsePrice(rawTotal);
             if (parsedTotal) li.line_total = parsedTotal.amount;
+
+            // Cart markup (real and demo) only ever renders ONE price element
+            // per line — the already-quantity-multiplied total (class
+            // .cart-item-total). There's no separate unit-price element at
+            // all, so FIELD_SEL.price's generic fallback grabs that same
+            // element above, making li.price actually the line total
+            // whenever quantity > 1 (masked until now — every prior scenario
+            // used quantity 1, where price === line_total anyway). Derive
+            // the true per-unit figures from the reliable line_total/qty.
+            if (li.line_total != null && li.quantity > 1) {
+                li.price = +(li.line_total / li.quantity).toFixed(2);
+                if (li.old_price != null) li.old_price = +(li.old_price / li.quantity).toFixed(2);
+            }
+
 
             // Per-line-item inline reason — a retailer-shown explanation for
             // why an expected discount didn't apply (e.g. "BOGO not
