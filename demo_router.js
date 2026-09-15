@@ -1225,10 +1225,15 @@ function renderPdpOverride(pdp) {
     if (addToCartPriceEl && pdp.price != null) addToCartPriceEl.textContent = money(pdp.price);
 
     if (pdp.exclusionNote) {
-        let noteEl = document.querySelector('[data-demo-exclusion-note]');
+        // Real-plausible class name (not a demo-only data attribute) so
+        // tag.js's buildTile() can read this as a genuine price-adjacent
+        // disclosure — the "why this price differs" text a scanner needs
+        // to correlate against a claim made elsewhere (e.g. a category
+        // banner promising a bigger discount).
+        let noteEl = document.querySelector('.price-exclusion-note');
         if (!noteEl) {
             noteEl = document.createElement('p');
-            noteEl.dataset.demoExclusionNote = 'true';
+            noteEl.className = 'price-exclusion-note';
             noteEl.style.cssText = 'font-size:0.75rem;color:var(--muted);margin-top:0.5rem;';
             const priceStack = hero.querySelector('.price-stack');
             if (priceStack) priceStack.after(noteEl); else hero.appendChild(noteEl);

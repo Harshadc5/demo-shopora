@@ -656,6 +656,7 @@
             badge: ['.discount-badge', '[class*="badge"]', '[class*="deal-chip"]'],
             addToCart: ['.add-to-cart', '.button-primary.add-to-cart', '[class*="add-to-cart"]'],
             deliveryNote: ['.delivery-note', '[class*="delivery-note"]', '.delivery-promise', '.shipping-msg', '[class*="delivery"]'],
+            priceExclusionNote: ['.price-exclusion-note', '.promo-exclusion', '[data-exclusion-reason]'],
 
             // ---NEW: Tier 1 Additions --- w.r.t Canonical Signal Schema
             categoryWords: ['.category', '.department', '[data-category]', '.product-category'],
@@ -914,6 +915,15 @@
             // Per-card delivery promise text (if shown).
             var delivery = textOf(firstMatch(card, FIELD_SEL.deliveryNote), 60);
             if (delivery) tile.delivery_promise = delivery;
+
+            // Price-adjacent disclosure/exclusion note (e.g. "Excluded from
+            // category promo — new model") — the "why this price differs"
+            // fine print, letting a scanner correlate it against a claim
+            // made elsewhere (e.g. a category banner) using payload data
+            // alone, without requiring a human to visually inspect the page.
+            var disclosureNote = textOf(firstMatch(card, FIELD_SEL.priceExclusionNote), 120);
+            if (disclosureNote) tile.disclosure_note = disclosureNote;
+
 
 
             // --- NEW TIER 1 EXTRACTION LOGIC --- w.r.t Canonical Signal Schema
