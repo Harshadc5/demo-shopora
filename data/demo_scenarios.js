@@ -33,6 +33,13 @@ export const demoScenarios = {
                 }
             ],
             "shipping_label": "FREE delivery"
+        },
+        // Spec requires data-promo-state='accepted' data-applied-code='WELCOME10'
+        // on the promo field — this scenario never set that before, so the
+        // field sat at tag.js's unset-attribute default ('active') instead.
+        "promo": {
+            "state": "accepted",
+            "code": "WELCOME10"
         }
     },
     "shipping-threshold-broken": {

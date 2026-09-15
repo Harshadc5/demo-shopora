@@ -1,0 +1,420 @@
+﻿AIORA
+Shopora-estore :   https://shopora-estore.vercel.app/
+
+
+Shopora-estore dashboard: https://shopora-estore.vercel.app/dashboard.html
+
+Pattern 1 — Ungoverned Offer Stacking (1.1 – 1.5)
+1.1 — Deep-discount stacking on a single SKU
+https://shopora-estore.vercel.app/cart.html?demo=stacked-discounts&identity=logged-in&member_tier=plus
+
+
+What should render:
+Cart page shows 1x PulseTune Headphones (SKU el-2, $89.99 current price, was $119.99). Applied promo code: WELCOME10. Three separate discount lines visible in the savings breakdown. Cart totals reflect all three stacked.
+Exact cart state to render:
+Line item:
+  PulseTune Wireless Headphones × 1             $89.99
+
+Subtotal                                                                 $89.99
+Savings breakdown:
+  • Markdown (25% off original)                      -$30.00
+  • WELCOME10 code (10% off)                      -$6.00
+  • Shopora Plus member (5% off)                  -$2.70
+Total savings:                                                      -$38.70
+Shipping:                                                              FREE
+Total:                                                                      $51.29
+DOM requirements:
+* • Cart line item has data-cart-item-sku='el-2', data-cart-item-quantity='1', data-cart-item-line-total='89.99'.
+* • Savings breakdown section (.savings-display) contains three separate .savings-component divs, each with data-component-type ('markdown' | 'code' | 'loyalty') and data-amount.
+* • Promo field shows data-promo-state='accepted' and data-applied-code='WELCOME10'.
+* • Header shows data-identity-state='recognized' and data-member-tier='plus'.
+
+
+
+________________
+
+
+1.2 — Stacking breaks the free-shipping threshold
+https://shopora-estore.vercel.app/cart.html?demo=shipping-threshold-broken
+
+
+What should render:
+Cart with 1x MetroStride Socks 3pk ($12.99) + 1x NovaPeak Wireless Charger ($24.99) + 1x Terra&Co Planter Set ($29.99) = $67.97 subtotal (above $35 threshold). Apply SAVE20 code (20% off = -$13.59). New subtotal: $54.38 (still above threshold, good). But also apply markdown discounts on all three items ($9 total). New subtotal: $45.38. Still above $35 threshold — but wait: also apply a stacked $15 loyalty credit. New subtotal: $30.38 — NOW below $35 threshold. Cart still displays 'FREE delivery' from earlier state.
+Simplified: build the render so that after all discounts, cart is $30.38 and 'FREE delivery' is still shown as the shipping line — contradiction visible on the page.
+DOM requirements:
+* • Cart shows 3 line items with correct SKUs and prices.
+* • Savings breakdown shows 4 components (SAVE20 code, 3 markdowns, loyalty credit).
+* • Shipping line shows 'FREE delivery' (or $0.00 shipping charge) even though cart is $30.38.
+* • Header still displays 'Free delivery above $35' claim.
+
+
+
+
+
+1.3 — Welcome code applied to a returning Plus member
+https://shopora-estore.vercel.app/cart.html?demo=welcome-code-returning-member&identity=logged-in&member_tier=plus
+
+
+What should render:
+Header shows 'Hello, Rahul' + 'Shopora Plus' member chip (returning customer). Cart has 1x InkPress Business Strategy Book ($22.99). Savings breakdown shows: 'Welcome code WELCOME10 applied: 10% off' AND 'Shopora Plus member: 5% off'. Both are simultaneously applied. WELCOME10 should be for new customers only — Plus member is clearly not new.
+DOM requirements:
+* • Header data-identity-state='recognized', data-member-tier='plus'.
+* • Cart savings breakdown includes a component labeled 'WELCOME10' or 'Welcome code' or 'First-order code'.
+* • Cart savings breakdown ALSO includes a component labeled 'Shopora Plus' or 'Loyalty' or 'Member discount'.
+
+
+1.4 — Percent + dollar + BOGO all firing on same items
+https://shopora-estore.vercel.app/cart.html?demo=multi-mechanism-stack
+
+
+What should render:
+Cart has 2x Luna Cotton Graphic Tee (SKU fa-1, $18.99 each = $37.98 subtotal). BOGO 'Buy One Get One 50%' is applied to fa-1 (second unit gets 50% off). Then SAVE20 code is applied (20% off entire cart). Then a $5 category coupon is applied. Then Plus member 5% off. Four discount mechanisms stacked on a $37.98 cart.
+Exact cart state:
+Line 1: Luna Cotton Graphic Tee × 2    $37.98
+
+Subtotal:                                             $37.98
+Savings breakdown:
+  • Markdown (24% off)                  -$12.00
+  • BOGO 50% off 2nd unit             -$9.50
+  • SAVE20 code (20% off)              -$7.60
+  • $5 category coupon                  -$5.00
+  • Shopora Plus (5%)                    -$1.90
+Total savings:                                  -$36.00
+Effective total after discounts:        $1.98
+(Effective 95% off — clearly an error state.)
+DOM requirements:
+* • Cart shows 2 units of fa-1 with per-unit price and line total.
+* • Savings breakdown has 5 separate components.
+* • Total is ~$1.98, savings shown as -$36.00 vs subtotal $37.98.
+
+
+
+
+
+________________
+
+
+1.5 — Stacked discounts push price below margin floor
+https://shopora-estore.vercel.app/cart.html?demo=margin-floor-violation&identity=logged-in&member_tier=plus
+
+
+What should render:
+Cart has 1x MetroStride Running Shoes (fa-3, listed $74.99, marked from $94.99 — 21% off). Apply SAVE20 code (20% off = -$15). Plus loyalty 5% (-$3.75). Plus $10 sale credit. Effective price: $46.24. Fashion margin floor is $40 per unit (per demo_config.json) — still technically above floor. Now push it further: apply an extra 15% off through a second stacked code. New effective: $39.30. BELOW margin floor. Retailer would be losing money on this transaction.
+DOM requirements:
+* • Cart shows 1x fa-3 with effective price of ~$39.30 after 5 stacked discounts.
+* • Savings breakdown shows all 5 components.
+* • Nothing in the DOM needs to declare 'margin floor violated' — the scanner detects this by comparing to config.
+
+
+
+
+________________
+
+
+Pattern 2 — Unreconciled Headline Claims (2.1 - 2.5)
+2.1 — Homepage hero claim exceeds every tile's actual discount 
+https://shopora-estore.vercel.app/index.html?demo=hero-claim-mismatch
+
+
+What should render:
+Homepage hero banner reads: 'UP TO 35% OFF ELECTRONICS'. Electronics tiles below the hero (in trending or featured section) show discounts of 17%, 19%, 20%, 22%, and 25% — the maximum is 25%. No tile reaches 35%.
+DOM requirements:
+* • Hero banner has data-module-type='hero' and headline text 'UP TO 35% OFF ELECTRONICS'.
+* • Hero contains a ClaimSignal-worthy element: text 'UP TO 35% OFF' with data-claim-percent='35' and data-claim-scope='electronics'.
+* • Electronics tiles displayed below (5-6 tiles) all show discount % less than 35 — pull from products.json electronics section (max there is 29% for NovaPeak, but for the demo cap the featured tiles at 25%).
+
+
+2.1.b — Homepage hero dollar-off claim honored by only one of six tiles  
+
+
+https://shopora-estore.vercel.app/index.html?demo=hero-claim-mismatch-dollar
+
+
+What should render:
+ Homepage hero banner reads: "UP TO $100 OFF ON ELECTRONICS". Six electronics tiles below the hero (featured section) show individual dollar-off badges of $20, $23, $100, $7, $13, and $3 — only one tile ($100, el-1) actually reaches the claimed figure. The other five fall short by inconsistent amounts, ranging from $3 to $23 off. 
+DOM requirements:
+*  Hero banner has data-module-type='hero' and headline text 'UP TO $100 OFF ON ELECTRONICS'. 
+* Hero contains a ClaimSignal-worthy element: text 'UP TO $100 OFF' with data-claim-amount='100', data-claim-type='dollar_off', and data-claim-scope='electronics'. 
+* Six electronics tiles displayed below each show a .discount-badge reading '$X OFF' (el-3: $20, el-8: $23, el-1: $100, el-4: $7, el-7: $13, el-2: $3) .
+
+
+
+
+
+
+
+
+2.2  ·  Free-shipping threshold disagreement (header vs cart nudge)
+https://shopora-estore.vercel.app/cart.html?demo=threshold-disagreement
+
+
+What should render:
+Header top-bar says 'Free delivery above $35' (baseline Shopora text). Cart has 1x Chapter&Verse Poetry Collection (bo-3, $12.99) and 1x Northwind Cookbook (bo-4, $19.99), subtotal $32.98. Cart nudge message says 'Add $8 more for free shipping.' Math should be $35 - $32.98 = $2.02, not $8. The nudge threshold value ($40.98 implied) disagrees with header's $35 claim.
+DOM requirements:
+* • Header contains claim 'Free delivery above $35' — data-claim-type='free_shipping' data-claim-threshold='35'.
+* • Cart shows subtotal $32.98.
+* • Cart nudge shows 'Add $8 more for free shipping' — data-threshold-nudge-value='40.98' (or similar mismatched value).
+
+
+
+
+
+
+2.3  ·  Category banner 'SAVE UP TO 50%' with no tile at 50%
+https://shopora-estore.vercel.app/category.html?demo=category-claim-mismatch
+
+
+What should render:
+Electronics category page displays a large banner at the top reading: 'SAVE UP TO 50% ON ELECTRONICS!' The tiles below (all 12 electronics products) have discount percentages ranging from 17% to 29% (per products.json). Max discount is 29%. No tile at or near 50%.
+DOM requirements:
+* • Category page has a banner module data-module-type='banner' with claim 'SAVE UP TO 50%' data-claim-percent='50'.
+* • All 12 electronics tiles display with their actual discount percentages from products.json.
+
+
+
+
+________________
+
+
+2.4  ·  Countdown 'Deal of the Day' with no actual deal
+https://shopora-estore.vercel.app/index.html?demo=urgency-no-deal
+
+
+What should render:
+The homepage 'Deal of the Day' section (existing on Shopora) shows a live countdown timer. In this scenario, the featured product in that section is Belfry Bath Towel Set (ho-5) shown WITHOUT any discount — regular price $44.99, no old_price shown, no discount badge. The countdown says 'Ends in 09:42:18' but there's no actual deal on the product.
+DOM requirements:
+* • 'Deal of the Day' section has countdown timer active.
+* • The featured product tile in that section shows Belfry Bath Towel Set at $44.99 with no strikethrough price, no discount badge.
+
+
+
+
+2.5  ·  Newsletter promise vs loyalty tier disagreement
+https://shopora-estore.vercel.app/index.html?demo=newsletter-loyalty-mismatch
+
+
+What should render:
+Homepage newsletter signup section reads: 'Deals worth opening your inbox for. Get weekly price drops, new arrivals and member-only 20% off deals.' Elsewhere on the same page, the Shopora Plus loyalty section reads: 'Shopora Plus: extra 5% off.' Two different promises about what members get.
+DOM requirements:
+* • Newsletter section has module with claim 'member-only 20% off' — data-claim-percent='20' data-claim-scope='members'.
+* • Loyalty section has module with claim 'Shopora Plus: extra 5% off' — data-claim-percent='5' data-claim-scope='plus_members'.
+________________
+
+
+Pattern 3 — Brand Over-Concentration (3.1 - 3.5)
+3.1 — Homepage  Trending row dominated by one brand 
+https://shopora-estore.vercel.app/index.html?demo=trending-brand-dominance
+
+
+What should render:
+Homepage 'Trending products' section shows 10 tiles. Six of them are VoltMax brand. Order (positions 1-10): el-1 (VoltMax Laptop), el-4 (VoltMax Smartwatch), el-2 (PulseTune Headphones), el-7 (VoltMax Tablet), el-10 (VoltMax Mouse), fa-1 (Luna Tee), el-11 (IronCore SSD, but re-brand as VoltMax for this scenario ONLY — override brand attribute to 'VoltMax'), ho-1 (OakLine Coffee Table), el-12 (ClearWave Hub — override to 'VoltMax'), bo-1 (Chapter&Verse Novel). VoltMax count: 6 of 10 = 60%.
+DOM requirements:
+* • Trending row shows exactly 10 tiles in the order above.
+* • Six tiles have data-brand='VoltMax'.
+* • Each tile has data-position set to its 1-10 position.
+
+
+
+
+
+3.2  ·  Electronics category dominated by PulseTune (sponsored + organic)
+https://shopora-estore.vercel.app/category.html?category=electronics&demo=pulsetune-dominance
+
+
+What should render:
+Electronics category page. Top 3 positions are sponsored, all PulseTune: el-2 (PulseTune Headphones, sponsored), el-3 (PulseTune Earbuds, sponsored), el-5 (PulseTune Speaker, sponsored). Next 8 organic positions include el-8 (PulseTune Soundbar), el-1 (VoltMax Laptop), el-6 (StreamHub Stick), el-4 (VoltMax Smartwatch), el-7 (VoltMax Tablet), el-9 (NovaPeak Charger), el-11 (IronCore SSD), el-12 (ClearWave Hub). PulseTune total: 4 of 11 shown (3 sponsored + 1 organic). With sponsored weighted 2x: 6 of 14 effective positions = ~43%.
+DOM requirements:
+* • First 3 tiles have data-sponsored='true' AND data-brand='PulseTune'.
+* • Tiles 4-11 are organic (data-sponsored='false') with brand distribution as specified.
+* • Sponsored tiles visually display 'Sponsored' badge.
+________________
+
+
+3.3  ·  Search results brand collapse for 'wireless headphones'
+https://shopora-estore.vercel.app/search.html?demo=brand-collapse
+
+
+Note:
+This requires you to build a search results page at /search.html (this doesn't exist in Shopora today). Structure: reads ?q= parameter, displays 'Showing results for "wireless headphones"' heading, shows a grid of product tiles.
+What should render:
+Search results page for 'wireless headphones'. 10 result tiles. 8 are PulseTune (all 5 PulseTune SKUs, plus 3 fabricated variants: PulseTune Sport Earbuds, PulseTune Studio Headphones, PulseTune Kids Headphones — add these as demo-only products in products.json OR just render as ad-hoc tiles in the search page). The other 2 tiles: VoltMax Gaming Headset, StreamHub Bluetooth Speaker. PulseTune 8 of 10 = 80% concentration.
+DOM requirements:
+* • Search results page reads ?q= param and displays it in heading: 'Showing results for "wireless headphones"'.
+* • Body element has data-page-type='search'.
+* • 10 result tiles with 8 having data-brand='PulseTune'.
+
+
+3.4  ·  Cart recommendations single-brand cross-sell
+https://shopora-estore.vercel.app/cart.html?demo=cart-recs-single-brand
+
+
+What should render:
+Cart has 1x VoltMax Laptop Pro (el-1) already in cart. Below the cart, the 'You might also like' recommendation section shows 4 tiles, ALL VoltMax brand: el-4 (VoltMax Smartwatch), el-7 (VoltMax Tablet), el-10 (VoltMax Gaming Mouse), and one more fabricated 'VoltMax Laptop Sleeve' (add as ad-hoc tile). Zero cross-brand diversification despite many complementary products from other brands in the catalog.
+DOM requirements:
+* • Cart contains VoltMax Laptop (el-1) as line item.
+* • Recommendations section has data-module-type='recommendations' data-parent-context='cart:el-1'.
+* • All 4 recommendation tiles have data-brand='VoltMax'.
+________________
+
+
+3.5  ·  Fashion category dominated by Luna
+https://shopora-estore.vercel.app/category.html?category=fashion&demo=luna-dominance
+
+
+What should render:
+Fashion category page. Top 6 positions: fa-1 (Luna Tee), fa-2 (Luna Denim Jacket), fa-4 (Luna Sweater), fa-5 (Luna Jeans), fa-7 (Luna Handbag), fa-3 (MetroStride Running Shoes). Luna count in top 6: 5. Next 4 positions: fa-6 (MetroStride Socks), fa-8 (Sable&Co Belt), fa-9 (Meridian Sunglasses), fa-10 (MetroStride Windbreaker).
+DOM requirements:
+* • Fashion category page shows 10 tiles.
+* • First 5 of top 6 have data-brand='Luna'.
+
+
+
+
+________________
+
+Pattern 4 — Promise-to-Price Gap (4.1 - 4.5)
+4.1 — Category promises 25% off, PDP delivers 10%
+https://shopora-estore.vercel.app/category.html?category=electronics&demo=category-promise-gap
+Click the VoltMax Laptop Pro tile
+https://shopora-estore.vercel.app/pdp.html?sku=el-1&demo=promise-gap-destination
+
+
+What should render:
+Category page has a banner: 'UP TO 25% OFF ALL ELECTRONICS'. The tile for el-1 (VoltMax Laptop Pro) shows 25% discount badge visually. But when user clicks through to the PDP (/pdp.html?sku=el-1&demo=promise-gap-destination), the PDP shows only 10% off (price $1,619.99 from $1,799.99). The category banner and tile promised 25% but PDP delivers only 10%. Fine print on PDP: 'Excluded from category promo — new model.'
+DOM requirements:
+* • Category page: banner data-claim-percent='25' data-claim-scope='electronics'.
+* • Category page tile for el-1: badge showing '25% OFF' (visually promises 25%).
+* • PDP page for el-1 with ?demo=promise-gap-destination: shows only 10% off ($1,619.99).
+* • PDP shows small text 'Excluded from category promo — new model' below the price.
+
+
+4.2  ·  BOGO badge with quiet exclusion at cart 
+https://shopora-estore.vercel.app/category.html?category=fashion&demo=bogo-promise
+Click on the Add to Cart :- (Luna Tee) tile with 'Buy One Get One Free' badge & then click on Cart
+https://shopora-estore.vercel.app/cart.html?demo=bogo-broken-cart
+
+
+
+What should render:
+Category page shows Luna Cotton Tee (fa-1) with 'BUY ONE GET ONE FREE' badge overlay. User clicks add-to-cart. Cart page shows 2x Luna Tees at $18.99 each = $37.98 subtotal. No BOGO discount applied. Small inline reason in cart: 'BOGO not applicable to sale items.'
+DOM requirements:
+* • Category page tile for fa-1 has data-bogo='true' and visible 'Buy One Get One Free' badge.
+* • Cart page shows 2x fa-1 at full price ($37.98).
+* • Cart shows inline reason 'BOGO not applicable to sale items' near the fa-1 line item.
+
+
+4.3  ·  Free shipping claim contradicted by oversized surcharge
+https://shopora-estore.vercel.app/checkout.html?demo=shipping-oversized
+
+
+What should render:
+Cart/checkout has 1x OakLine Coffee Table (ho-1, $199.99). Header still shows 'Free delivery above $35' claim. Cart is $199.99 (well above threshold). Checkout page shows line: 'Oversized shipping fee: $9.99' — because home category items with weight/size are subject to oversized shipping per demo_config. Header still displays 'Free delivery above $35.' Customer sees contradictory information.
+DOM requirements:
+* • Header displays 'Free delivery above $35' — data-claim-type='free_shipping' data-claim-threshold='35'.
+* • Cart/checkout has 1x ho-1 at $199.99.
+• Checkout shipping line shows $9.99 oversized shipping fee with label 'Oversized shipping fee'.
+
+
+4.4  ·  Welcome code rejected for new customer
+https://shopora-estore.vercel.app/index.html?demo=welcome-code-promise 
+Click on Add to Cart :- Any Product
+https://shopora-estore.vercel.app/cart.html?demo=welcome-code-rejected
+
+
+What should render:
+Homepage has a promo module visible: 'NEW HERE? Use code WELCOME10 for 10% off your first order.' User (as guest) navigates to cart, applies WELCOME10. Cart shows the code in the promo field with data-promo-state='rejected' and inline message 'Invalid code. Please try again.' New customer's promo was rejected.
+DOM requirements:
+* • Homepage promo module has data-module-type='promo' with claim text 'WELCOME10 — 10% off'.
+* • Cart promo field has data-promo-state='rejected' data-inline-reason='Invalid code'.
+* • Cart identity_summary is 'guest' (no ?identity= param).
+________________
+
+
+4.5  ·  '$50 off orders over $200' but cart shows $30 discount
+https://shopora-estore.vercel.app/index.html?demo=save50-promise
+Click on Cart page
+https://shopora-estore.vercel.app/cart.html?demo=save50-broken
+
+
+Trigger flow:
+Step 1: /index.html?demo=save50-promise — homepage shows the $50/$200 promo
+Step 2: /cart.html?demo=save50-broken&code=SAVE50
+ (Cart is $215, code applies $30 instead of $50)
+What should render:
+Homepage banner: '$50 OFF ORDERS OVER $200 with code SAVE50'. User builds cart to $215. Applies SAVE50 code. Cart shows: SAVE50 accepted, discount amount $30 (not $50). No inline reason given. Customer expected $50 off, got $30 off.
+Cart contents to hit $215:
+1x el-1 VoltMax Laptop Pro    $149.99  (price for this scenario, overriding catalog)
+1x el-4 VoltMax Smartwatch      $65.00  (price for this scenario, overriding catalog)
+Subtotal:                      $214.99  (~$215)
+SAVE50 code applied:            -$30.00 (not -$50!)
+Total:                         $184.99
+
+
+________________
+
+
+Pattern 5 — Identity Handoff Failures (5.1 - 5.5)
+5.1 — Homepage recognizes the user, cart forgets them
+https://shopora-estore.vercel.app/index.html?demo=identity-recognized&identity=logged-in&member_tier=plus 
+Click Cart
+https://shopora-estore.vercel.app/cart.html?demo=identity-lost
+
+
+What should render:
+On the homepage with ?identity=logged-in, the header account chip shows 'Hello, Rahul' with 'Shopora Plus' member label. User navigates to /cart.html?demo=identity-lost. On the cart page, the header account chip reverts to 'Hello, guest' — no member tier, no identity. Same visit, same tab, but the identity was lost.
+DOM requirements:
+* • Homepage: header has data-identity-state='recognized' data-member-tier='plus' data-customer-hash='...'.
+* • Cart page (with ?demo=identity-lost): header has data-identity-state='guest' — no member-tier, no customer-hash.
+
+
+
+
+5.2  ·  Loyalty tier displayed inconsistently on same page
+https://shopora-estore.vercel.app/checkout.html?identity=logged-in&member_tier=plus&demo=loyalty-inconsistent
+
+
+What should render:
+Checkout page. Header shows 'Hello, Rahul' with 'Shopora Plus' member chip. But the loyalty module on the checkout page (typically a prompt or benefit callout) reads: 'Not a member? Join Shopora Plus for 5% off.' Two components on the same page disagree about the shopper's identity.
+DOM requirements:
+* • Header (header_chip component): data-identity-state='recognized' data-member-tier='plus'.
+* • Loyalty prompt module: data-component='prompt' data-identity-state='guest' with visible text 'Not a member? Join for 5% off.'
+________________
+
+
+5.3  ·  Cart contents disappear across page navigation
+https://shopora-estore.vercel.app/index.html?demo=cart-has-2-items
+Click on Mobiles&Electronics
+https://shopora-estore.vercel.app/category.html?category=electronics&demo=cart-lost
+
+
+What should render:
+Homepage displays with header showing cart icon '🛒 2' (cart has 2 items). User navigates to electronics category page. Header cart icon now shows '🛒 0' — cart state was lost during navigation. No add-to-cart or remove events occurred between the two page loads.
+DOM requirements:
+* • Homepage header: cart icon shows count '2' — data-cart-count='2'.
+* • Category page header: cart icon shows count '0' — data-cart-count='0'.
+* • No interaction events (add_to_cart, remove_from_cart) fired between the two page loads.
+
+
+5.4  ·  Wishlist icon disagrees with wishlist page 
+https://shopora-estore.vercel.app/index.html?identity=logged-in&demo=wishlist-count-3
+Click :-  wishlist icon
+https://shopora-estore.vercel.app/category.html?wishlist=true&demo=wishlist-empty
+Note: Here I reused the category page instead of creating a new one wishlist.html page
+Requires new page /wishlist.html. Simple page — either shows wishlist items or an empty-state prompt.
+What should render:
+Homepage (identity=logged-in) header shows wishlist icon '♡ 3' — indicates 3 saved items. User clicks wishlist icon, navigates to /wishlist.html. Wishlist page shows empty state: 'Sign in to see your wishlist' — even though the user WAS logged in on the previous page. The wishlist page lost the session.
+DOM requirements:
+* • Homepage header: wishlist icon element with data-wishlist-count='3'.
+* • Wishlist page: shows empty state with text 'Sign in to see your wishlist' and data-page-type='wishlist'.
+________________
+5.5  ·  Member identity present, member pricing not applied
+https://shopora-estore.vercel.app/cart.html?identity=logged-in&member_tier=plus&demo=member-pricing-missing
+
+
+What should render:
+Cart page. Header clearly shows 'Hello, Rahul' with 'Shopora Plus · 450 points · 50 from Gold' member chip. Cart has 1x el-2 PulseTune Headphones ($89.99). Cart savings breakdown shows NO member discount line. Member is identified but member pricing is not applied. Cart total: $89.99 (should be $85.49 with 5% member discount).
+DOM requirements:
+   * • Header shows full member state: data-identity-state='recognized' data-member-tier='plus' data-loyalty-balance='450'.
+   * • Cart line: 1x el-2 at $89.99.
+   * • Cart savings breakdown: empty or has no 'Shopora Plus' component.
+   * • Cart total: $89.99 (not $85.49).
