@@ -1578,8 +1578,27 @@
                 } else {
                     result.free_shipping_eligibility = 'unknown';
                 }
-                var threshNum = parseFloat(msg.replace(/[^0-9.-]+/g, ''));
-                if (!isNaN(threshNum)) result.free_shipping_threshold_value = threshNum;
+                // FIX: was parseFloat(msg.replace(/[^0-9.-]+/g, '')) — stripped
+                // ALL non-digit chars from the WHOLE message, so a message with
+                // two dollar figures (e.g. "Spend $12.01 more... delivery is
+                // $5.99...") concatenated into garbage ("12.015.99" ->
+                // parseFloat stops at the 2nd '.' -> 12.015). Match only the
+                // first dollar figure instead.
+                var nudgeMatch = msg.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+                if (nudgeMatch) {
+                    var nudgeAmount = parseFloat(nudgeMatch[1]);
+                    result.free_shipping_nudge_amount = nudgeAmount;
+                    // free_shipping_threshold_value should be the IMPLIED
+                    // total threshold (what the nudge math suggests the free-
+                    // shipping cutoff actually is), not just the gap amount —
+                    // that's what lets a scanner compare it against the
+                    // header's real claimed threshold. Only meaningful while
+                    // not yet eligible; once eligible there's no gap to imply
+                    // a threshold from.
+                    if (result.free_shipping_eligibility === 'not-eligible' && result.subtotal_numeric != null) {
+                        result.free_shipping_threshold_value = +(result.subtotal_numeric + nudgeAmount).toFixed(2);
+                    }
+                }
             }
 
 
