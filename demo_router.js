@@ -6,7 +6,7 @@ import { products } from './data/products.js';
 // versioned separately from this file's own <script> tag ?v= — bump this
 // whenever demo_scenarios.js content changes, so edits can't get stuck
 // behind a stale cached copy.
-import { demoScenarios } from './data/demo_scenarios.js?v=32';
+import { demoScenarios } from './data/demo_scenarios.js?v=33';
 
 function money(n) {
     return '$' + Number(n).toFixed(2);
@@ -749,6 +749,22 @@ function renderHeroOverride(hero) {
     if (hero.claim_amount != null) {
         heroSection.dataset.claimAmount = hero.claim_amount;
         heroSection.dataset.claimType = 'dollar_off';
+        // The real hero section's own static markup carries its own
+        // percent claim (data-claim-percent="35", code SUMMER35, min-spend
+        // $50 — see index.html) — a dollar-off scenario needs to fully
+        // REPLACE those, not just add its own claim_amount alongside them,
+        // or extractClaim() picks up both the real percent AND the staged
+        // dollar figure at once.
+        heroSection.removeAttribute('data-claim-percent');
+        if (hero.claim_code) heroSection.dataset.claimCode = hero.claim_code;
+        if (hero.claim_min_spend != null) heroSection.dataset.claimMinSpend = hero.claim_min_spend;
+        // The real visible promo-code line right under the headline also
+        // still says "35% off orders over $50" regardless of scenario —
+        // replace it so what's on screen matches the claim being tested.
+        const promoCodeEl = heroSection.querySelector('.hero-promo-code');
+        if (promoCodeEl && hero.claim_code) {
+            promoCodeEl.innerHTML = `Use code <strong>${hero.claim_code}</strong> for $${hero.claim_amount} off orders over $${hero.claim_min_spend}`;
+        }
     }
     if (hero.headline) {
         const h1 = heroSection.querySelector('.hero-copy h1, h1');
